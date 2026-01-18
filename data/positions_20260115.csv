@@ -1,0 +1,59 @@
+security_id,ticker,security_name,quantity,market_value,currency,sector,issuer,asset_class,country,liquidity_days
+SEC001,AAPL,Apple Inc,850000,178500000.00,USD,Technology,Apple Inc,equity,US,1
+SEC002,MSFT,Microsoft Corporation,520000,218400000.00,USD,Technology,Microsoft Corporation,equity,US,1
+SEC003,NVDA,NVIDIA Corporation,280000,156800000.00,USD,Technology,NVIDIA Corporation,equity,US,1
+SEC004,GOOGL,Alphabet Inc Class A,380000,66880000.00,USD,Communication Services,Alphabet Inc,equity,US,1
+SEC005,AMZN,Amazon.com Inc,420000,84000000.00,USD,Consumer Discretionary,Amazon.com Inc,equity,US,1
+SEC006,META,Meta Platforms Inc,195000,107250000.00,USD,Communication Services,Meta Platforms Inc,equity,US,1
+SEC007,TSLA,Tesla Inc,310000,99200000.00,USD,Consumer Discretionary,Tesla Inc,equity,US,1
+SEC008,JPM,JPMorgan Chase & Co,680000,142800000.00,USD,Financials,JPMorgan Chase & Co,equity,US,1
+SEC009,V,Visa Inc Class A,290000,84100000.00,USD,Financials,Visa Inc,equity,US,1
+SEC010,JNJ,Johnson & Johnson,480000,76800000.00,USD,Healthcare,Johnson & Johnson,equity,US,1
+SEC011,UNH,UnitedHealth Group Inc,145000,85550000.00,USD,Healthcare,UnitedHealth Group Inc,equity,US,1
+SEC012,PG,Procter & Gamble Co,395000,61620000.00,USD,Consumer Staples,Procter & Gamble Co,equity,US,1
+SEC013,XOM,Exxon Mobil Corporation,620000,68200000.00,USD,Energy,Exxon Mobil Corporation,equity,US,1
+SEC014,CVX,Chevron Corporation,380000,57000000.00,USD,Energy,Chevron Corporation,equity,US,1
+SEC015,HD,Home Depot Inc,165000,64350000.00,USD,Consumer Discretionary,Home Depot Inc,equity,US,1
+SEC016,MA,Mastercard Inc Class A,145000,72500000.00,USD,Financials,Mastercard Inc,equity,US,1
+SEC017,BAC,Bank of America Corp,1850000,64750000.00,USD,Financials,Bank of America Corp,equity,US,1
+SEC018,PFE,Pfizer Inc,1650000,46200000.00,USD,Healthcare,Pfizer Inc,equity,US,1
+SEC019,ABBV,AbbVie Inc,285000,54150000.00,USD,Healthcare,AbbVie Inc,equity,US,1
+SEC020,MRK,Merck & Co Inc,395000,51350000.00,USD,Healthcare,Merck & Co Inc,equity,US,1
+SEC021,KO,Coca-Cola Co,720000,43200000.00,USD,Consumer Staples,Coca-Cola Co,equity,US,1
+SEC022,PEP,PepsiCo Inc,265000,45050000.00,USD,Consumer Staples,PepsiCo Inc,equity,US,1
+SEC023,LLY,Eli Lilly and Co,68000,57120000.00,USD,Healthcare,Eli Lilly and Co,equity,US,1
+SEC024,AVGO,Broadcom Inc,52000,78000000.00,USD,Technology,Broadcom Inc,equity,US,1
+SEC025,CRM,Salesforce Inc,195000,58500000.00,USD,Technology,Salesforce Inc,equity,US,1
+SEC026,ORCL,Oracle Corporation,380000,53200000.00,USD,Technology,Oracle Corporation,equity,US,1
+SEC027,ADBE,Adobe Inc,95000,52250000.00,USD,Technology,Adobe Inc,equity,US,1
+SEC028,CSCO,Cisco Systems Inc,850000,47600000.00,USD,Technology,Cisco Systems Inc,equity,US,1
+SEC029,ACN,Accenture PLC Class A,125000,46250000.00,USD,Technology,Accenture PLC,equity,IE,1
+SEC030,CAT,Caterpillar Inc,145000,50750000.00,USD,Industrials,Caterpillar Inc,equity,US,1
+SEC031,DE,Deere & Company,115000,46000000.00,USD,Industrials,Deere & Company,equity,US,1
+SEC032,HON,Honeywell International Inc,210000,44100000.00,USD,Industrials,Honeywell International Inc,equity,US,1
+SEC033,GE,GE Aerospace,245000,44100000.00,USD,Industrials,GE Aerospace,equity,US,1
+SEC034,RTX,RTX Corporation,365000,40150000.00,USD,Industrials,RTX Corporation,equity,US,1
+SEC035,LMT,Lockheed Martin Corp,78000,39000000.00,USD,Industrials,Lockheed Martin Corp,equity,US,1
+SEC036,UPS,United Parcel Service Inc,280000,39200000.00,USD,Industrials,United Parcel Service Inc,equity,US,1
+SEC037,GS,Goldman Sachs Group Inc,82000,41000000.00,USD,Financials,Goldman Sachs Group Inc,equity,US,1
+SEC038,MS,Morgan Stanley,385000,38500000.00,USD,Financials,Morgan Stanley,equity,US,1
+SEC039,BLK,BlackRock Inc,42000,42000000.00,USD,Financials,BlackRock Inc,equity,US,1
+SEC040,SCHW,Charles Schwab Corp,520000,36400000.00,USD,Financials,Charles Schwab Corp,equity,US,1
+SEC041,ASML,ASML Holding NV ADR,55000,49500000.00,USD,Technology,ASML Holding NV,equity,NL,3
+SEC042,TSM,Taiwan Semiconductor ADR,420000,63000000.00,USD,Technology,Taiwan Semiconductor,equity,TW,1
+SEC043,BABA,Alibaba Group Holding ADR,480000,43200000.00,USD,Consumer Discretionary,Alibaba Group,equity,CN,3
+SEC044,NVO,Novo Nordisk ADR,385000,50050000.00,USD,Healthcare,Novo Nordisk,equity,DK,3
+SEC045,SAP,SAP SE ADR,195000,39000000.00,USD,Technology,SAP SE,equity,DE,3
+SEC046,TM,Toyota Motor Corp ADR,185000,35150000.00,USD,Consumer Discretionary,Toyota Motor Corp,equity,JP,3
+SEC047,SHEL,Shell PLC ADR,485000,33950000.00,USD,Energy,Shell PLC,equity,GB,3
+SEC048,BP,BP PLC ADR,720000,25200000.00,USD,Energy,BP PLC,equity,GB,3
+SEC049,RIO,Rio Tinto PLC ADR,285000,21375000.00,USD,Materials,Rio Tinto PLC,equity,GB,3
+SEC050,VALE,Vale SA ADR,1450000,18850000.00,USD,Materials,Vale SA,equity,BR,7
+SEC051,SPY-S,SPDR S&P 500 ETF Trust (Short),-420000,-210000000.00,USD,Index,State Street,etf_short,US,1
+SEC052,QQQ-S,Invesco QQQ Trust (Short),-185000,-92500000.00,USD,Index,Invesco,etf_short,US,1
+SEC053,XLF-S,Financial Select Sector SPDR (Short),-850000,-38250000.00,USD,Financials,State Street,etf_short,US,1
+SEC054,XLE-S,Energy Select Sector SPDR (Short),-320000,-28800000.00,USD,Energy,State Street,etf_short,US,1
+SEC055,IWM-S,iShares Russell 2000 ETF (Short),-210000,-42000000.00,USD,Index,BlackRock,etf_short,US,1
+SEC056,CASH_USD,US Dollar Cash,1,72000000.00,USD,Cash,Multiple Banks,cash,US,1
+SEC057,TBILL_3M,US Treasury Bill 3-Month,50000000,49750000.00,USD,Government,US Treasury,fixed_income,US,1
+SEC058,TBILL_6M,US Treasury Bill 6-Month,25000000,24875000.00,USD,Government,US Treasury,fixed_income,US,1

@@ -1,0 +1,111 @@
+# Compliance RAG System Dependencies
+# Python 3.10+
+
+# ============================================
+# Core Framework
+# ============================================
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# ============================================
+# Database Connections
+# ============================================
+asyncpg>=0.29.0           # PostgreSQL async
+psycopg2-binary>=2.9.9    # PostgreSQL sync
+snowflake-connector-python>=3.6.0
+snowflake-sqlalchemy>=1.5.0
+redis>=5.0.0
+sqlalchemy>=2.0.23
+
+# ============================================
+# LLM & AI
+# ============================================
+openai>=1.6.0
+tiktoken>=0.5.2           # Token counting
+anthropic>=0.8.0          # Optional: Claude support
+
+# ============================================
+# Vector Store
+# ============================================
+pinecone-client>=2.2.4
+chromadb>=0.4.22          # Optional: local vector DB
+
+# ============================================
+# Document Generation
+# ============================================
+reportlab>=4.0.7          # PDF generation
+PyPDF2>=3.0.1             # PDF manipulation
+Jinja2>=3.1.2             # Templating
+WeasyPrint>=60.1          # HTML to PDF (optional)
+
+# ============================================
+# Data Processing
+# ============================================
+pandas>=2.1.4
+numpy>=1.26.2
+pyarrow>=14.0.2           # Parquet support
+
+# ============================================
+# API Framework
+# ============================================
+fastapi>=0.108.0
+uvicorn>=0.25.0
+python-multipart>=0.0.6   # File uploads
+
+# ============================================
+# Task Queue & Scheduling
+# ============================================
+celery>=5.3.6
+redis>=5.0.0              # Celery broker
+APScheduler>=3.10.4
+
+# ============================================
+# Observability
+# ============================================
+structlog>=23.3.0         # Structured logging
+opentelemetry-api>=1.22.0
+opentelemetry-sdk>=1.22.0
+opentelemetry-instrumentation-fastapi>=0.43b0
+prometheus-client>=0.19.0
+
+# ============================================
+# Security
+# ============================================
+cryptography>=41.0.7      # Encryption
+python-jose>=3.3.0        # JWT tokens
+passlib>=1.7.4            # Password hashing
+bcrypt>=4.1.2
+
+# ============================================
+# Testing
+# ============================================
+pytest>=7.4.3
+pytest-asyncio>=0.23.3
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+httpx>=0.26.0             # Async HTTP testing
+factory-boy>=3.3.0        # Test fixtures
+faker>=22.0.0             # Fake data generation
+
+# ============================================
+# Development
+# ============================================
+black>=23.12.1
+ruff>=0.1.9
+mypy>=1.8.0
+pre-commit>=3.6.0
+
+# ============================================
+# Database Migrations
+# ============================================
+alembic>=1.13.1
+
+# ============================================
+# Utilities
+# ============================================
+python-dateutil>=2.8.2
+pytz>=2023.3
+packaging>=23.2           # Version comparison
+tenacity>=8.2.3           # Retries
+httpx>=0.26.0             # HTTP client
+aiofiles>=23.2.1          # Async file operations

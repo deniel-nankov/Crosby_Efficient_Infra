@@ -1,0 +1,15 @@
+# Sample Positions Data
+# Export this from Bloomberg/Eze and place in data/positions/
+# File: positions_YYYYMMDD.csv
+
+security_id,ticker,security_name,quantity,market_value,currency,sector,issuer,asset_class
+SEC001,AAPL,Apple Inc,100000,15000000.00,USD,Technology,Apple Inc,equity
+SEC002,MSFT,Microsoft Corp,80000,12000000.00,USD,Technology,Microsoft Corp,equity
+SEC003,GOOGL,Alphabet Inc,50000,8500000.00,USD,Technology,Alphabet Inc,equity
+SEC004,JPM,JPMorgan Chase & Co,120000,9500000.00,USD,Financials,JPMorgan Chase & Co,equity
+SEC005,JNJ,Johnson & Johnson,90000,7200000.00,USD,Healthcare,Johnson & Johnson,equity
+SEC006,XOM,Exxon Mobil Corp,150000,6800000.00,USD,Energy,Exxon Mobil Corp,equity
+SEC007,PG,Procter & Gamble Co,70000,5500000.00,USD,Consumer Staples,Procter & Gamble Co,equity
+SEC008,NVDA,NVIDIA Corp,25000,11000000.00,USD,Technology,NVIDIA Corp,equity
+SEC009,V,Visa Inc,60000,8000000.00,USD,Financials,Visa Inc,equity
+SEC010,UNH,UnitedHealth Group Inc,40000,7500000.00,USD,Healthcare,UnitedHealth Group Inc,equity
