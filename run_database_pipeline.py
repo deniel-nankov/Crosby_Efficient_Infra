@@ -1,32 +1,41 @@
 #!/usr/bin/env python3
 """
 =============================================================================
-DATABASE-BACKED COMPLIANCE PIPELINE
+DATABASE-BACKED COMPLIANCE PIPELINE WITH TRUE RAG
 =============================================================================
 
 This script demonstrates the PRODUCTION workflow:
 1. Connect to PostgreSQL database (simulating client's OMS/PMS database)
 2. Load position and control data from database tables
-3. Generate LLM-powered compliance narratives (with fallback to templates)
-4. Output PDF workpapers with full audit trail
+3. Retrieve relevant policy context using RAG (vector similarity search)
+4. Generate LLM-powered narratives grounded in actual policy text
+5. Output PDF workpapers with full audit trail and citations
 
 FOR REAL CLIENT DEPLOYMENT:
 - Replace the connection string with client's database
 - Map their table names/columns to the adapter
 - Set LLM_PROVIDER and API key environment variables
+- Run embed_policies.py first to populate vector store
 - Deploy Docker stack in their infrastructure
+
+RAG CONFIGURATION:
+    First, embed policy documents:
+        python -m src.rag.embedder
+    
+    Then run pipeline:
+        LLM_PROVIDER=lmstudio python run_database_pipeline.py
 
 LLM CONFIGURATION:
     Set environment variables:
-        LLM_PROVIDER=anthropic    # or: openai, ollama, vllm, mock
+        LLM_PROVIDER=lmstudio     # or: anthropic, openai, ollama, vllm
         ANTHROPIC_API_KEY=sk-...  # for Anthropic Claude
         OPENAI_API_KEY=sk-...     # for OpenAI GPT-4
     
     The system will:
-    - Anonymize sensitive data before sending to LLM
-    - Generate professional compliance narratives
-    - Include proper citations for audit trail
-    - Fall back to templates if no API key is set
+    - Retrieve relevant policy sections using vector search
+    - Ground LLM generation in actual policy text
+    - Include proper citations with document references
+    - Fall back to templates if no LLM/RAG available
 
 =============================================================================
 """
@@ -184,7 +193,7 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
     # STEP 3: Generate Narrative (LLM-powered or Template fallback)
     # =========================================================================
     print("\n" + "=" * 70)
-    print("STEP 3: Generating Compliance Narrative")
+    print("STEP 3: Generating Compliance Narrative (RAG + LLM)")
     print("=" * 70)
     
     # Check for LLM availability and determine provider
@@ -193,6 +202,25 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
     llm_provider = os.environ.get("LLM_PROVIDER", "").lower()
     
     llm_available = bool(anthropic_key or openai_key or llm_provider in ("ollama", "vllm", "lmstudio"))
+    
+    # Check for RAG availability
+    rag_context = None
+    if llm_available:
+        print("\n  Checking RAG (policy retrieval) availability...")
+        retriever = get_rag_retriever()
+        if retriever:
+            print("  ✓ RAG enabled - retrieving relevant policy sections...")
+            retrieved = retriever.retrieve_for_controls(snapshot.control_results)
+            if retrieved.chunks:
+                print(f"    Retrieved {len(retrieved.chunks)} policy chunks (~{retrieved.total_tokens_estimate} tokens)")
+                for chunk in retrieved.chunks[:3]:  # Show first 3
+                    similarity = getattr(chunk, 'similarity', 0)
+                    print(f"    - {chunk.document_name} | {chunk.section_title} ({similarity:.0%} match)")
+                rag_context = retrieved.to_prompt_context()
+            else:
+                print("    No relevant policy chunks found")
+        else:
+            print("  ⚠ RAG not available - run 'python -m src.rag.embedder' to enable")
     
     if llm_available:
         if anthropic_key:
@@ -208,12 +236,13 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
         else:
             provider_info = "configured LLM"
         
-        print(f"\n  ✓ LLM detected: {provider_info}")
-        print("  Generating AI-powered compliance narrative...")
-        narrative = generate_llm_narrative(snapshot)
+        print(f"\n  ✓ LLM: {provider_info}")
+        rag_status = "with RAG context" if rag_context else "without RAG"
+        print(f"  Generating AI-powered narrative ({rag_status})...")
+        narrative = generate_llm_narrative(snapshot, rag_context)
     else:
         print("\n  ⚠ No LLM configured - using template-based narrative")
-        print("  Set ANTHROPIC_API_KEY or OPENAI_API_KEY for AI-powered narratives")
+        print("  Set LLM_PROVIDER=lmstudio for AI-powered narratives")
         narrative = generate_template_narrative(snapshot)
     
     print("\n  Narrative preview (first 500 chars):")
@@ -411,19 +440,38 @@ NAV as of date: ${snapshot.nav:,.0f}
     return narrative
 
 
-def generate_llm_narrative(snapshot) -> str:
+def get_rag_retriever():
+    """Initialize RAG retriever if available."""
+    try:
+        from rag.vector_store import VectorStore
+        from rag.embedder import LocalEmbedder
+        from rag.retriever import RAGRetriever
+        
+        vector_store = VectorStore(DATABASE_CONFIG)
+        embedder = LocalEmbedder()
+        retriever = RAGRetriever(vector_store, embedder)
+        
+        if retriever.is_available():
+            return retriever
+        return None
+    except Exception as e:
+        print(f"    Note: RAG not available ({e})")
+        return None
+
+
+def generate_llm_narrative(snapshot, rag_context: str = None) -> str:
     """
-    Generate narrative using LLM with data anonymization.
+    Generate narrative using LLM with RAG-retrieved policy context.
     
     This function:
-    1. Prepares control data in a structured format
-    2. Sends anonymized data to the LLM
-    3. Receives professional compliance narrative
-    4. De-anonymizes response to restore original values
+    1. Receives pre-retrieved policy context from RAG
+    2. Prepares control data in a structured format
+    3. Sends context + data to the LLM
+    4. Receives narrative grounded in actual policy text
     
     The LLM is prompted with SEC-compliant system instructions to:
-    - Only use facts from provided evidence
-    - Include citations for every factual statement
+    - Only use facts from provided evidence AND retrieved policies
+    - Include citations referencing the actual policy documents
     - Use professional compliance language
     """
     try:
@@ -460,7 +508,6 @@ Snapshot ID: {snapshot.snapshot_id}
   Threshold: {f.threshold}%
   Breach Amount: {f.breach_amount}%
   Status: FAIL
-  Policy Reference: investment_guidelines.md
 """
         
         if warnings:
@@ -483,18 +530,33 @@ Snapshot ID: {snapshot.snapshot_id}
 Your role is to generate clear, accurate, and well-cited compliance narratives.
 
 CRITICAL RULES:
-1. ONLY use information provided in the evidence context
+1. ONLY use information from the CONTROL RESULTS and POLICY CONTEXT provided
 2. NEVER invent, assume, or hallucinate any facts, numbers, or statements
-3. Include inline citations for EVERY factual statement using [Policy: filename | Section: type]
-4. Use precise, professional language appropriate for SEC examination
+3. Include inline citations for EVERY factual statement referencing the source policy
+4. Use the exact policy document names and sections from the retrieved context
 5. DO NOT perform any calculations - all numbers must come from the evidence
 6. Be concise but complete - 2-3 paragraphs maximum
 
 Your output will be reviewed by the Chief Compliance Officer and may be examined by SEC regulators.
 Accuracy and traceability are paramount."""
 
-        # User prompt
-        user_prompt = f"""Generate a daily compliance summary narrative based on the following control run results.
+        # User prompt with RAG context
+        if rag_context:
+            user_prompt = f"""Generate a daily compliance summary narrative based on the control results AND the retrieved policy context.
+
+{control_summary}
+
+{rag_context}
+
+INSTRUCTIONS:
+1. Start with an executive summary of today's compliance status
+2. For each warning or breach, reference the SPECIFIC policy section from the retrieved context
+3. Use citations in format [Policy: document_name.md | Section: section_title]
+4. End with the data source and snapshot information for audit trail
+
+Generate the professional compliance narrative grounded in the policy documents:"""
+        else:
+            user_prompt = f"""Generate a daily compliance summary narrative based on the following control run results.
 
 {control_summary}
 
