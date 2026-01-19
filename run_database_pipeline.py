@@ -7,13 +7,26 @@ DATABASE-BACKED COMPLIANCE PIPELINE
 This script demonstrates the PRODUCTION workflow:
 1. Connect to PostgreSQL database (simulating client's OMS/PMS database)
 2. Load position and control data from database tables
-3. Generate compliance narratives
+3. Generate LLM-powered compliance narratives (with fallback to templates)
 4. Output PDF workpapers with full audit trail
 
 FOR REAL CLIENT DEPLOYMENT:
 - Replace the connection string with client's database
 - Map their table names/columns to the adapter
+- Set LLM_PROVIDER and API key environment variables
 - Deploy Docker stack in their infrastructure
+
+LLM CONFIGURATION:
+    Set environment variables:
+        LLM_PROVIDER=anthropic    # or: openai, ollama, vllm, mock
+        ANTHROPIC_API_KEY=sk-...  # for Anthropic Claude
+        OPENAI_API_KEY=sk-...     # for OpenAI GPT-4
+    
+    The system will:
+    - Anonymize sensitive data before sending to LLM
+    - Generate professional compliance narratives
+    - Include proper citations for audit trail
+    - Fall back to templates if no API key is set
 
 =============================================================================
 """
@@ -26,6 +39,9 @@ from decimal import Decimal
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
+
+# Import LLM infrastructure
+from integration.llm_config import get_compliance_llm, LLMConfig, LLMProvider
 
 # =============================================================================
 # CONFIGURATION - WHAT A CLIENT WOULD CUSTOMIZE
@@ -165,21 +181,37 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
         print(f"    {status_icon} {ctrl.control_id}: {ctrl.calculated_value}% vs {ctrl.threshold}% ({ctrl.threshold_operator})")
     
     # =========================================================================
-    # STEP 3: Generate Narrative (Template-based or LLM)
+    # STEP 3: Generate Narrative (LLM-powered or Template fallback)
     # =========================================================================
     print("\n" + "=" * 70)
     print("STEP 3: Generating Compliance Narrative")
     print("=" * 70)
     
-    # Check for LLM availability
-    llm_available = bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+    # Check for LLM availability and determine provider
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    llm_provider = os.environ.get("LLM_PROVIDER", "").lower()
+    
+    llm_available = bool(anthropic_key or openai_key or llm_provider in ("ollama", "vllm"))
     
     if llm_available:
-        print("\n  LLM API key detected - using real LLM for narratives")
-        # In production, this would call the RAG pipeline
+        if anthropic_key:
+            provider_info = "Anthropic Claude"
+        elif openai_key:
+            provider_info = "OpenAI GPT-4"
+        elif llm_provider == "ollama":
+            provider_info = "Ollama (local)"
+        elif llm_provider == "vllm":
+            provider_info = "vLLM (local)"
+        else:
+            provider_info = "configured LLM"
+        
+        print(f"\n  ✓ LLM detected: {provider_info}")
+        print("  Generating AI-powered compliance narrative...")
         narrative = generate_llm_narrative(snapshot)
     else:
-        print("\n  No LLM API key - using template-based narrative")
+        print("\n  ⚠ No LLM configured - using template-based narrative")
+        print("  Set ANTHROPIC_API_KEY or OPENAI_API_KEY for AI-powered narratives")
         narrative = generate_template_narrative(snapshot)
     
     print("\n  Narrative preview (first 500 chars):")
@@ -378,10 +410,114 @@ NAV as of date: ${snapshot.nav:,.0f}
 
 
 def generate_llm_narrative(snapshot) -> str:
-    """Generate narrative using LLM (requires API key)."""
-    # This would call the RAG pipeline with real LLM
-    # For now, return enhanced template
-    return generate_template_narrative(snapshot) + "\n\n[Generated with LLM assistance]"
+    """
+    Generate narrative using LLM with data anonymization.
+    
+    This function:
+    1. Prepares control data in a structured format
+    2. Sends anonymized data to the LLM
+    3. Receives professional compliance narrative
+    4. De-anonymizes response to restore original values
+    
+    The LLM is prompted with SEC-compliant system instructions to:
+    - Only use facts from provided evidence
+    - Include citations for every factual statement
+    - Use professional compliance language
+    """
+    try:
+        llm = get_compliance_llm()
+        
+        # Build context for LLM
+        passed = [c for c in snapshot.control_results if c.status == "pass"]
+        warnings = [c for c in snapshot.control_results if c.status == "warning"]
+        failed = [c for c in snapshot.control_results if c.status == "fail"]
+        
+        # Build control summary
+        control_summary = f"""
+COMPLIANCE CONTROL RESULTS - {snapshot.as_of_date}
+================================================================================
+
+Total Controls: {len(snapshot.control_results)}
+Passed: {len(passed)}
+Warnings: {len(warnings)}
+Failures: {len(failed)}
+
+NAV: ${snapshot.nav:,.0f}
+Total Positions: {len(snapshot.positions)}
+Data Source: {snapshot.source_system}
+Snapshot ID: {snapshot.snapshot_id}
+"""
+        
+        if failed:
+            control_summary += "\n\nFAILED CONTROLS (require immediate action):\n"
+            for f in failed:
+                control_summary += f"""
+- Control: {f.control_name}
+  Type: {f.control_type}
+  Calculated Value: {f.calculated_value}%
+  Threshold: {f.threshold}%
+  Breach Amount: {f.breach_amount}%
+  Status: FAIL
+  Policy Reference: investment_guidelines.md
+"""
+        
+        if warnings:
+            control_summary += "\n\nWARNING CONTROLS (approaching thresholds):\n"
+            for w in warnings:
+                control_summary += f"""
+- Control: {w.control_name}
+  Type: {w.control_type}
+  Calculated Value: {w.calculated_value}%
+  Threshold: {w.threshold}%
+  Distance to Threshold: {w.threshold - w.calculated_value:.2f}%
+  Status: WARNING
+"""
+        
+        if not warnings and not failed:
+            control_summary += "\n\nAll controls passed within acceptable thresholds.\n"
+        
+        # SEC-compliant system prompt
+        system_prompt = """You are a compliance documentation assistant for an SEC-registered hedge fund.
+Your role is to generate clear, accurate, and well-cited compliance narratives.
+
+CRITICAL RULES:
+1. ONLY use information provided in the evidence context
+2. NEVER invent, assume, or hallucinate any facts, numbers, or statements
+3. Include inline citations for EVERY factual statement using [Policy: filename | Section: type]
+4. Use precise, professional language appropriate for SEC examination
+5. DO NOT perform any calculations - all numbers must come from the evidence
+6. Be concise but complete - 2-3 paragraphs maximum
+
+Your output will be reviewed by the Chief Compliance Officer and may be examined by SEC regulators.
+Accuracy and traceability are paramount."""
+
+        # User prompt
+        user_prompt = f"""Generate a daily compliance summary narrative based on the following control run results.
+
+{control_summary}
+
+INSTRUCTIONS:
+1. Start with an executive summary of today's compliance status
+2. Highlight any breaches or warnings with their severity
+3. Reference the applicable policy for each issue
+4. End with the data source and snapshot information for audit trail
+5. Use citations in format [Policy: investment_guidelines.md | Section: control_type]
+
+Generate the professional compliance narrative now:"""
+
+        # Generate with anonymization (data is auto-anonymized, then restored)
+        narrative = llm.generate(user_prompt, system_prompt)
+        
+        # Add model attribution for audit trail
+        narrative += f"\n\n---\n[Generated by {llm.model_id} | {datetime.now(timezone.utc).isoformat()}]"
+        
+        return narrative
+        
+    except Exception as e:
+        # Fall back to template if LLM fails
+        print(f"⚠ LLM generation failed: {e}")
+        print("  Falling back to template-based narrative...")
+        return generate_template_narrative(snapshot) + "\n\n[Template-based: LLM unavailable]"
 
 
 def main():

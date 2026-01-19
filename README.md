@@ -331,6 +331,52 @@ This will show you:
 - ✅ Example LLM prompts
 - ✅ Document structure
 
+### LLM Configuration (Optional but Recommended)
+
+The system generates AI-powered compliance narratives when an LLM API key is configured. Without an API key, it falls back to template-based narratives.
+
+**Option 1: Anthropic Claude (Recommended for Compliance)**
+```bash
+# Windows
+set ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# Linux/Mac
+export ANTHROPIC_API_KEY=sk-ant-api03-...
+```
+
+**Option 2: OpenAI GPT-4**
+```bash
+# Windows
+set OPENAI_API_KEY=sk-...
+set LLM_PROVIDER=openai
+
+# Linux/Mac
+export OPENAI_API_KEY=sk-...
+export LLM_PROVIDER=openai
+```
+
+**Option 3: Local LLM (Ollama)**
+```bash
+# First install Ollama: https://ollama.ai
+ollama serve
+ollama pull llama3.1:70b
+
+# Then run with:
+set LLM_PROVIDER=ollama
+```
+
+**Test LLM Integration:**
+```bash
+python test_llm_integration.py
+```
+
+**Run Full Pipeline with LLM:**
+```bash
+python run_database_pipeline.py --setup-sample
+```
+
+The system features **automatic data anonymization** - sensitive data (tickers, large dollar amounts) is anonymized before being sent to external LLMs and restored in the response.
+
 ### Manual Installation (Without Docker)
 
 If you prefer to set up databases manually:
