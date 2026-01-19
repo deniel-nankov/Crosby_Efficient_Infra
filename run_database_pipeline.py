@@ -192,13 +192,15 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
     openai_key = os.environ.get("OPENAI_API_KEY")
     llm_provider = os.environ.get("LLM_PROVIDER", "").lower()
     
-    llm_available = bool(anthropic_key or openai_key or llm_provider in ("ollama", "vllm"))
+    llm_available = bool(anthropic_key or openai_key or llm_provider in ("ollama", "vllm", "lmstudio"))
     
     if llm_available:
         if anthropic_key:
             provider_info = "Anthropic Claude"
         elif openai_key:
             provider_info = "OpenAI GPT-4"
+        elif llm_provider == "lmstudio":
+            provider_info = "LM Studio (local)"
         elif llm_provider == "ollama":
             provider_info = "Ollama (local)"
         elif llm_provider == "vllm":

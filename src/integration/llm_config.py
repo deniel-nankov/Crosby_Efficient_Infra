@@ -29,6 +29,7 @@ class LLMProvider(Enum):
     """Supported LLM providers."""
     ANTHROPIC = "anthropic"  # Claude - Recommended
     OPENAI = "openai"        # GPT-4
+    LMSTUDIO = "lmstudio"    # Local via LM Studio (OpenAI-compatible)
     OLLAMA = "ollama"        # Local via Ollama
     VLLM = "vllm"            # Local via vLLM server
     MOCK = "mock"            # For testing
@@ -71,6 +72,7 @@ class LLMConfig:
         defaults = {
             LLMProvider.ANTHROPIC: "claude-sonnet-4-20250514",
             LLMProvider.OPENAI: "gpt-4o",
+            LLMProvider.LMSTUDIO: "local-model",  # LM Studio uses whatever is loaded
             LLMProvider.OLLAMA: "llama3.1:70b",
             LLMProvider.VLLM: "meta-llama/Meta-Llama-3.1-70B-Instruct",
             LLMProvider.MOCK: "mock",
@@ -218,7 +220,7 @@ class AnthropicClient(LLMClient):
 
 
 class OpenAIClient(LLMClient):
-    """OpenAI GPT client."""
+    """OpenAI GPT client (also works with OpenAI-compatible APIs like LM Studio)."""
     
     def __init__(self, config: LLMConfig):
         self.config = config
@@ -229,7 +231,14 @@ class OpenAIClient(LLMClient):
         if self._client is None:
             try:
                 import openai
-                self._client = openai.OpenAI(api_key=self.config.api_key)
+                # Support custom base URL for LM Studio and other OpenAI-compatible APIs
+                if self.config.api_base:
+                    self._client = openai.OpenAI(
+                        api_key=self.config.api_key or "lm-studio",  # LM Studio doesn't need real key
+                        base_url=self.config.api_base,
+                    )
+                else:
+                    self._client = openai.OpenAI(api_key=self.config.api_key)
             except ImportError:
                 raise ImportError("Install openai: pip install openai")
         return self._client
@@ -342,6 +351,54 @@ class MockClient(LLMClient):
         return "mock"
 
 
+class LMStudioClient(LLMClient):
+    """
+    Local LLM via LM Studio.
+    
+    LM Studio provides an OpenAI-compatible API at http://localhost:1234/v1
+    
+    Setup:
+    1. Download LM Studio: https://lmstudio.ai
+    2. Download a model (e.g., Qwen 3, Llama 3.1, Mistral)
+    3. Go to Local Server tab and click "Start Server"
+    4. Set LLM_PROVIDER=lmstudio
+    """
+    
+    def __init__(self, config: LLMConfig):
+        self.config = config
+        self.api_base = config.api_base or "http://localhost:1234/v1"
+        self._client = None
+    
+    @property
+    def client(self):
+        if self._client is None:
+            try:
+                import openai
+                self._client = openai.OpenAI(
+                    api_key="lm-studio",  # LM Studio doesn't require a real key
+                    base_url=self.api_base,
+                )
+            except ImportError:
+                raise ImportError("Install openai: pip install openai")
+        return self._client
+    
+    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+        response = self.client.chat.completions.create(
+            model=self.config.model_id or "local-model",
+            max_tokens=self.config.max_tokens,
+            temperature=self.config.temperature,
+            messages=[
+                {"role": "system", "content": system_prompt or "You are a compliance documentation assistant."},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        return response.choices[0].message.content
+    
+    @property
+    def model_id(self) -> str:
+        return f"lmstudio/{self.config.model_id or 'local-model'}"
+
+
 # =============================================================================
 # FACTORY
 # =============================================================================
@@ -364,6 +421,7 @@ def create_llm_client(config: Optional[LLMConfig] = None) -> LLMClient:
     clients = {
         LLMProvider.ANTHROPIC: AnthropicClient,
         LLMProvider.OPENAI: OpenAIClient,
+        LLMProvider.LMSTUDIO: LMStudioClient,
         LLMProvider.OLLAMA: OllamaClient,
         LLMProvider.VLLM: VLLMClient,
         LLMProvider.MOCK: MockClient,
