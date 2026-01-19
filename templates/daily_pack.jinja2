@@ -1,0 +1,195 @@
+{# Daily Compliance Pack Template #}
+{# Version: 1.0 #}
+{# Last Updated: 2024-01-01 #}
+
+{# ============================================ #}
+{# DOCUMENT HEADER #}
+{# ============================================ #}
+
+# Daily Compliance Pack
+
+**Fund:** {{ fund_name }}  
+**Report Date:** {{ run_date | date_format }}  
+**Generated:** {{ generated_at | datetime_format }}  
+**Document ID:** {{ document_id }}  
+
+---
+
+{# ============================================ #}
+{# SECTION 1: EXECUTIVE SUMMARY #}
+{# ============================================ #}
+
+## 1. Executive Summary
+
+### Overall Status: {{ overall_status | upper }}
+
+{{ executive_summary_narrative }}
+
+**Key Metrics:**
+| Metric | Value | Status |
+|--------|-------|--------|
+| Total Controls Executed | {{ total_controls }} | — |
+| Passed | {{ passed_count }} | ✓ |
+| Warnings | {{ warning_count }} | ⚠ |
+| Breaches | {{ breach_count }} | ✗ |
+| Open Exceptions | {{ open_exceptions }} | — |
+
+**Evidence Hash:** `{{ summary_evidence_hash }}`
+
+---
+
+{# ============================================ #}
+{# SECTION 2: CONTROL RESULTS #}
+{# ============================================ #}
+
+## 2. Control Results
+
+### 2.1 Position Limits
+
+| Control | Metric Value | Threshold | Status | Evidence |
+|---------|--------------|-----------|--------|----------|
+{% for result in position_limit_results %}
+| {{ result.control_name }} | {{ result.metric_value | number_format(2) }} | {{ result.threshold_value | number_format(2) }} | {{ result.status }} | `{{ result.evidence_hash[:8] }}` |
+{% endfor %}
+
+### 2.2 Concentration Limits
+
+| Control | Metric Value | Threshold | Status | Evidence |
+|---------|--------------|-----------|--------|----------|
+{% for result in concentration_results %}
+| {{ result.control_name }} | {{ result.metric_value | number_format(2) }} | {{ result.threshold_value | number_format(2) }} | {{ result.status }} | `{{ result.evidence_hash[:8] }}` |
+{% endfor %}
+
+### 2.3 Liquidity Monitoring
+
+| Bucket | Current | Minimum | Status | Evidence |
+|--------|---------|---------|--------|----------|
+{% for result in liquidity_results %}
+| {{ result.bucket_name }} | {{ result.metric_value | percent_format }} | {{ result.threshold_value | percent_format }} | {{ result.status }} | `{{ result.evidence_hash[:8] }}` |
+{% endfor %}
+
+### 2.4 Counterparty Exposure
+
+| Counterparty | Exposure | Limit | Utilization | Evidence |
+|--------------|----------|-------|-------------|----------|
+{% for result in counterparty_results %}
+| {{ result.counterparty_name }} | {{ result.exposure | currency_format }} | {{ result.limit | currency_format }} | {{ result.utilization | percent_format }} | `{{ result.evidence_hash[:8] }}` |
+{% endfor %}
+
+---
+
+{# ============================================ #}
+{# SECTION 3: EXCEPTION DETAILS #}
+{# ============================================ #}
+
+## 3. Exception Details
+
+{% if exceptions %}
+{% for exception in exceptions %}
+
+### Exception {{ loop.index }}: {{ exception.control_name }}
+
+**Exception ID:** {{ exception.exception_id }}  
+**Breach Date:** {{ exception.breach_date | date_format }}  
+**Status:** {{ exception.status }}  
+**Escalation Level:** {{ exception.escalation_level }}  
+
+**Metrics:**
+- Metric Value: {{ exception.metric_value | number_format(4) }}
+- Threshold: {{ exception.threshold_value | number_format(4) }}
+- Severity: {{ exception.severity | percent_format }} over threshold
+
+**Commentary:**
+{{ exception.commentary }}
+
+**Evidence Hash:** `{{ exception.evidence_hash }}`
+
+{% if exception.remediation_plan %}
+**Remediation Plan:**
+{{ exception.remediation_plan }}
+{% endif %}
+
+---
+
+{% endfor %}
+{% else %}
+*No exceptions for this reporting period.*
+{% endif %}
+
+---
+
+{# ============================================ #}
+{# SECTION 4: POSITION SNAPSHOT #}
+{# ============================================ #}
+
+## 4. Position Snapshot
+
+### Top 10 Long Positions
+
+| Security | Quantity | Market Value | % NAV | Evidence |
+|----------|----------|--------------|-------|----------|
+{% for position in top_long_positions %}
+| {{ position.security_name }} | {{ position.quantity | number_format(0) }} | {{ position.market_value | currency_format }} | {{ position.pct_nav | percent_format }} | `{{ position.evidence_hash[:8] }}` |
+{% endfor %}
+
+### Top 10 Short Positions
+
+| Security | Quantity | Market Value | % NAV | Evidence |
+|----------|----------|--------------|-------|----------|
+{% for position in top_short_positions %}
+| {{ position.security_name }} | {{ position.quantity | number_format(0) }} | {{ position.market_value | currency_format }} | {{ position.pct_nav | percent_format }} | `{{ position.evidence_hash[:8] }}` |
+{% endfor %}
+
+### Exposure Summary
+
+| Category | Long | Short | Net | Evidence |
+|----------|------|-------|-----|----------|
+{% for exposure in exposure_summary %}
+| {{ exposure.category }} | {{ exposure.long | percent_format }} | {{ exposure.short | percent_format }} | {{ exposure.net | percent_format }} | `{{ exposure.evidence_hash[:8] }}` |
+{% endfor %}
+
+---
+
+{# ============================================ #}
+{# SECTION 5: EVIDENCE APPENDIX #}
+{# ============================================ #}
+
+## 5. Evidence Appendix
+
+This section contains all evidence hashes referenced in this document for audit trail verification.
+
+### Control Run Evidence
+
+| Run ID | Control ID | Evidence Hash | Timestamp |
+|--------|------------|---------------|-----------|
+{% for evidence in control_evidence %}
+| `{{ evidence.run_id[:8] }}` | {{ evidence.control_id }} | `{{ evidence.evidence_hash }}` | {{ evidence.timestamp | datetime_format }} |
+{% endfor %}
+
+### Data Snapshot Evidence
+
+| Snapshot ID | Source | Row Count | Hash | Timestamp |
+|-------------|--------|-----------|------|-----------|
+{% for snapshot in data_snapshots %}
+| `{{ snapshot.snapshot_id[:8] }}` | {{ snapshot.source }} | {{ snapshot.row_count | number_format(0) }} | `{{ snapshot.hash }}` | {{ snapshot.timestamp | datetime_format }} |
+{% endfor %}
+
+---
+
+{# ============================================ #}
+{# DOCUMENT FOOTER #}
+{# ============================================ #}
+
+## Document Certification
+
+**Document Hash:** `{{ document_hash }}`  
+**Generated By:** {{ generated_by }}  
+**Generation Timestamp:** {{ generated_at | datetime_format }}  
+
+This document was generated by an automated compliance system. All numerical values are derived from deterministic calculations against source data. Narrative sections were generated with LLM assistance using only the evidence cited.
+
+*For SEC examination purposes: All prompts, responses, and evidence chains are logged and available upon request.*
+
+---
+
+**CONFIDENTIAL - INTERNAL USE ONLY**

@@ -1,0 +1,219 @@
+{# Form PF Workpaper Template #}
+{# Version: 1.0 #}
+{# Purpose: Support documentation for SEC Form PF quarterly filing #}
+
+{# ============================================ #}
+{# DOCUMENT HEADER #}
+{# ============================================ #}
+
+# Form PF Workpaper
+
+**Fund:** {{ fund_name }}  
+**Filing Period:** {{ filing_period_start | date_format }} to {{ filing_period_end | date_format }}  
+**As-of Date:** {{ as_of_date | date_format }}  
+**Prepared:** {{ prepared_at | datetime_format }}  
+**Document ID:** {{ document_id }}  
+
+---
+
+## Filing Overview
+
+| Field | Value |
+|-------|-------|
+| Form Type | Form PF |
+| Filer Type | {{ filer_type }} |
+| Reporting Period | Q{{ quarter }} {{ year }} |
+| RAUM | {{ regulatory_aum | currency_format }} |
+| Filing Deadline | {{ filing_deadline | date_format }} |
+
+---
+
+{# ============================================ #}
+{# SECTION 1: REGULATORY AUM CALCULATION #}
+{# ============================================ #}
+
+## 1. Regulatory Assets Under Management (RAUM)
+
+### 1.1 AUM Calculation
+
+| Component | Amount | Evidence |
+|-----------|--------|----------|
+| Gross Asset Value | {{ gross_asset_value | currency_format }} | `{{ gross_av_evidence }}` |
+| Less: Borrowings | {{ borrowings | currency_format }} | `{{ borrowings_evidence }}` |
+| Net Asset Value | {{ nav | currency_format }} | `{{ nav_evidence }}` |
+| Uncalled Commitments | {{ uncalled | currency_format }} | `{{ uncalled_evidence }}` |
+| **Regulatory AUM** | **{{ regulatory_aum | currency_format }}** | `{{ raum_evidence }}` |
+
+### 1.2 Calculation Methodology
+{{ raum_methodology_narrative }}
+
+**Evidence Hash:** `{{ raum_calculation_evidence }}`
+
+---
+
+{# ============================================ #}
+{# SECTION 2: BENEFICIAL OWNERSHIP #}
+{# ============================================ #}
+
+## 2. Beneficial Ownership
+
+### 2.1 Investor Breakdown
+
+| Investor Type | Count | % of NAV | Evidence |
+|---------------|-------|----------|----------|
+{% for investor_type in investor_breakdown %}
+| {{ investor_type.type }} | {{ investor_type.count }} | {{ investor_type.pct_nav | percent_format }} | `{{ investor_type.evidence }}` |
+{% endfor %}
+
+### 2.2 Geographic Distribution
+
+| Region | % of NAV | Evidence |
+|--------|----------|----------|
+{% for region in geographic_distribution %}
+| {{ region.name }} | {{ region.pct_nav | percent_format }} | `{{ region.evidence }}` |
+{% endfor %}
+
+---
+
+{# ============================================ #}
+{# SECTION 3: INVESTMENT STRATEGY #}
+{# ============================================ #}
+
+## 3. Investment Strategy & Performance
+
+### 3.1 Strategy Classification
+
+| Strategy | Gross Exposure | Net Exposure | % of Fund |
+|----------|----------------|--------------|-----------|
+{% for strategy in strategies %}
+| {{ strategy.name }} | {{ strategy.gross | percent_format }} | {{ strategy.net | percent_format }} | {{ strategy.pct_fund | percent_format }} |
+{% endfor %}
+
+### 3.2 Quarterly Performance
+
+| Month | Gross Return | Net Return | Benchmark | Evidence |
+|-------|--------------|------------|-----------|----------|
+{% for month in quarterly_performance %}
+| {{ month.name }} | {{ month.gross_return | percent_format }} | {{ month.net_return | percent_format }} | {{ month.benchmark | percent_format }} | `{{ month.evidence }}` |
+{% endfor %}
+
+| **Quarter Total** | {{ quarter_gross | percent_format }} | {{ quarter_net | percent_format }} | {{ quarter_benchmark | percent_format }} | `{{ quarter_evidence }}` |
+
+---
+
+{# ============================================ #}
+{# SECTION 4: RISK METRICS #}
+{# ============================================ #}
+
+## 4. Risk Metrics (Question 26-42)
+
+### 4.1 Value at Risk
+
+| VaR Measure | Value | Methodology | Evidence |
+|-------------|-------|-------------|----------|
+| 99% 1-Day VaR | {{ var_99_1d | percent_format }} | {{ var_methodology }} | `{{ var_evidence }}` |
+| 95% 1-Day VaR | {{ var_95_1d | percent_format }} | {{ var_methodology }} | `{{ var_evidence }}` |
+| 99% 10-Day VaR | {{ var_99_10d | percent_format }} | {{ var_methodology }} | `{{ var_evidence }}` |
+
+### 4.2 Stress Test Results
+
+| Scenario | Impact on NAV | Evidence |
+|----------|---------------|----------|
+{% for scenario in stress_scenarios %}
+| {{ scenario.name }} | {{ scenario.impact | percent_format }} | `{{ scenario.evidence }}` |
+{% endfor %}
+
+### 4.3 Leverage
+
+| Leverage Type | Value | Evidence |
+|---------------|-------|----------|
+| Gross Leverage (GNE) | {{ gross_leverage | number_format(2) }}x | `{{ leverage_evidence }}` |
+| Net Leverage | {{ net_leverage | number_format(2) }}x | `{{ leverage_evidence }}` |
+| Borrowing Leverage | {{ borrowing_leverage | number_format(2) }}x | `{{ leverage_evidence }}` |
+
+---
+
+{# ============================================ #}
+{# SECTION 5: COUNTERPARTY EXPOSURE #}
+{# ============================================ #}
+
+## 5. Counterparty Exposure (Question 43-47)
+
+### 5.1 Largest Counterparties
+
+| Rank | Counterparty | Exposure Type | % of NAV | Evidence |
+|------|--------------|---------------|----------|----------|
+{% for cp in top_counterparties %}
+| {{ loop.index }} | {{ cp.name }} | {{ cp.type }} | {{ cp.pct_nav | percent_format }} | `{{ cp.evidence }}` |
+{% endfor %}
+
+### 5.2 Counterparty Credit Quality
+
+| Rating | Count | % of Total Exposure |
+|--------|-------|---------------------|
+{% for rating in counterparty_ratings %}
+| {{ rating.rating }} | {{ rating.count }} | {{ rating.pct_exposure | percent_format }} |
+{% endfor %}
+
+---
+
+{# ============================================ #}
+{# SECTION 6: LIQUIDITY #}
+{# ============================================ #}
+
+## 6. Portfolio Liquidity (Question 48-52)
+
+### 6.1 Liquidity Profile
+
+| Liquidation Period | % of Portfolio | Evidence |
+|--------------------|----------------|----------|
+| T+1 (1 day) | {{ liquidity_t1 | percent_format }} | `{{ liquidity_evidence }}` |
+| T+7 (1 week) | {{ liquidity_t7 | percent_format }} | `{{ liquidity_evidence }}` |
+| T+30 (1 month) | {{ liquidity_t30 | percent_format }} | `{{ liquidity_evidence }}` |
+| T+90 (1 quarter) | {{ liquidity_t90 | percent_format }} | `{{ liquidity_evidence }}` |
+| T+180 (6 months) | {{ liquidity_t180 | percent_format }} | `{{ liquidity_evidence }}` |
+| T+365+ (1 year+) | {{ liquidity_t365 | percent_format }} | `{{ liquidity_evidence }}` |
+
+### 6.2 Investor Liquidity Terms
+
+| Redemption Frequency | Notice Period | Gate | Lock-up |
+|----------------------|---------------|------|---------|
+| {{ redemption_frequency }} | {{ notice_period }} | {{ gate_provision }} | {{ lockup_period }} |
+
+---
+
+{# ============================================ #}
+{# SECTION 7: EVIDENCE APPENDIX #}
+{# ============================================ #}
+
+## 7. Evidence Appendix
+
+### 7.1 Data Sources
+
+| Source | Description | As-of Date | Hash |
+|--------|-------------|------------|------|
+{% for source in data_sources %}
+| {{ source.name }} | {{ source.description }} | {{ source.as_of | date_format }} | `{{ source.hash }}` |
+{% endfor %}
+
+### 7.2 Calculation Audit Trail
+
+| Calculation | Input Evidence | Output Evidence | Verified |
+|-------------|----------------|-----------------|----------|
+{% for calc in calculations %}
+| {{ calc.name }} | `{{ calc.input_hash }}` | `{{ calc.output_hash }}` | {{ calc.verified }} |
+{% endfor %}
+
+---
+
+## Preparer Certification
+
+I certify that the information contained in this workpaper is accurate and complete based on the evidence cited.
+
+**Prepared By:** {{ prepared_by }}  
+**Date:** {{ prepared_at | date_format }}  
+**Document Hash:** `{{ document_hash }}`  
+
+---
+
+**CONFIDENTIAL - SEC FILING SUPPORT DOCUMENTATION**

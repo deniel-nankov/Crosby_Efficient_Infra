@@ -1,0 +1,29 @@
+security_id,ticker,security_name,quantity,market_value,currency,sector,issuer,asset_class,country,liquidity_days,contract_size,unit,current_price,data_source
+CLH26,CL,WTI Crude Oil Mar 2026 Futures,1500,89085000.0,USD,Energy,NYMEX/CME,commodity_futures,US,1,1000,barrels,59.39,EIA via DataHub
+BZH26,BZ,Brent Crude Oil Mar 2026 Futures,1200,78480000.0,USD,Energy,ICE,commodity_futures,GB,1,1000,barrels,65.4,EIA via DataHub
+NGH26,NG,Henry Hub Natural Gas Mar 2026 Futures (Short),-800,-23200000.0,USD,Energy,NYMEX/CME,commodity_futures,US,1,10000,MMBtu,2.9,EIA via DataHub
+RBH26,RB,RBOB Gasoline Mar 2026 Futures,600,54180000.0,USD,Energy,NYMEX/CME,commodity_futures,US,1,42000,gallons,2.15,EIA
+HOH26,HO,Heating Oil Mar 2026 Futures,400,39480000.0,USD,Energy,NYMEX/CME,commodity_futures,US,1,42000,gallons,2.35,EIA
+GCG26,GC,Gold Feb 2026 Futures,450,150306750.0,USD,Precious Metals,COMEX/CME,commodity_futures,US,1,100,troy_oz,3340.15,World Bank via DataHub
+SIH26,SI,Silver Mar 2026 Futures,350,55125000.0,USD,Precious Metals,COMEX/CME,commodity_futures,US,1,5000,troy_oz,31.5,COMEX
+PLJ26,PL,Platinum Apr 2026 Futures,120,5910000.0,USD,Precious Metals,NYMEX/CME,commodity_futures,US,1,50,troy_oz,985.0,NYMEX
+HGH26,HG,Copper Mar 2026 Futures,500,53125000.0,USD,Industrial Metals,COMEX/CME,commodity_futures,US,1,25000,pounds,4.25,COMEX
+ALH26,AL,Aluminum Mar 2026 Futures,200,13250000.0,USD,Industrial Metals,LME,commodity_futures,GB,1,25,metric_tons,2650.0,LME
+ZCH26,ZC,Corn Mar 2026 Futures,400,9700000.0,USD,Agriculture,CBOT/CME,commodity_futures,US,1,5000,bushels,4.85,CFTC COT Reports
+ZWH26,ZW,Wheat Mar 2026 Futures,300,8625000.0,USD,Agriculture,CBOT/CME,commodity_futures,US,1,5000,bushels,5.75,CFTC COT Reports
+ZSH26,ZS,Soybeans Mar 2026 Futures,350,17937500.0,USD,Agriculture,CBOT/CME,commodity_futures,US,1,5000,bushels,10.25,CFTC COT Reports
+SBH26,SB,Sugar #11 Mar 2026 Futures,250,6160000.0,USD,Agriculture,ICE,commodity_futures,US,1,112000,pounds,0.22,ICE
+KCH26,KC,Coffee Mar 2026 Futures,180,21937500.0,USD,Agriculture,ICE,commodity_futures,US,1,37500,pounds,3.25,ICE
+EQ_XOM,XOM,Exxon Mobil Corporation,180000,18990000.0,USD,Energy Equities,Exxon Mobil Corporation,equity,US,1,,,105.5,Market
+EQ_CVX,CVX,Chevron Corporation,120000,18240000.0,USD,Energy Equities,Chevron Corporation,equity,US,1,,,152.0,Market
+EQ_COP,COP,ConocoPhillips,95000,10260000.0,USD,Energy Equities,ConocoPhillips,equity,US,1,,,108.0,Market
+EQ_SLB,SLB,Schlumberger Ltd,150000,6375000.0,USD,Energy Equities,Schlumberger Ltd,equity,US,1,,,42.5,Market
+EQ_HAL,HAL,Halliburton Company,200000,5750000.0,USD,Energy Equities,Halliburton Company,equity,US,1,,,28.75,Market
+EQ_FCX,FCX,Freeport-McMoRan,180000,7560000.0,USD,Mining Equities,Freeport-McMoRan,equity,US,1,,,42.0,Market
+EQ_NEM,NEM,Newmont Corporation,160000,6160000.0,USD,Mining Equities,Newmont Corporation,equity,US,1,,,38.5,Market
+EQ_GOLD,GOLD,Barrick Gold,250000,4312500.0,USD,Mining Equities,Barrick Gold,equity,US,1,,,17.25,Market
+EQ_SCCO,SCCO,Southern Copper,65000,6175000.0,USD,Mining Equities,Southern Copper,equity,US,1,,,95.0,Market
+EQ_ADM,ADM,Archer-Daniels-Midland,140000,7280000.0,USD,Agriculture Equities,Archer-Daniels-Midland,equity,US,1,,,52.0,Market
+EQ_BG,BG,Bunge Limited,75000,7387500.0,USD,Agriculture Equities,Bunge Limited,equity,US,1,,,98.5,Market
+EQ_CTVA,CTVA,Corteva Inc,100000,5800000.0,USD,Agriculture Equities,Corteva Inc,equity,US,1,,,58.0,Market
+CASH_USD,CASH,US Dollar Cash,1,85000000.0,USD,Cash,Multiple Banks,cash,US,1,,,1.0,Internal

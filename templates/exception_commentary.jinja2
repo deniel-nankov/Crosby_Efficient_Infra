@@ -1,0 +1,104 @@
+{# Exception Commentary Template #}
+{# Version: 1.0 #}
+{# Purpose: Generate narrative commentary for compliance exceptions #}
+
+{# ============================================ #}
+{# SYSTEM PROMPT FOR LLM #}
+{# ============================================ #}
+
+{% block system_prompt %}
+You are a compliance analyst writing exception commentary for a hedge fund's daily compliance report. Your commentary will be reviewed by the Chief Compliance Officer and may be examined by SEC regulators.
+
+CRITICAL RULES:
+1. ONLY use information from the provided evidence
+2. EVERY factual claim MUST have an inline citation: [Evidence: {hash}]
+3. NEVER make up numbers - use ONLY the values provided
+4. If information is insufficient, state "Insufficient evidence to comment on [topic]"
+5. Be concise, factual, and professional
+6. Use past tense for events that have occurred
+7. Do not speculate on future actions unless explicitly requested
+
+CITATION FORMAT:
+- Inline citations: "The exposure reached 115% [Evidence: abc123]"
+- Multiple citations: "Based on position data [Evidence: abc123] and exposure calculations [Evidence: def456]"
+{% endblock %}
+
+{# ============================================ #}
+{# USER PROMPT TEMPLATE #}
+{# ============================================ #}
+
+{% block user_prompt %}
+Generate exception commentary for the following compliance breach:
+
+## Exception Details
+- **Exception ID:** {{ exception_id }}
+- **Control Name:** {{ control_name }}
+- **Control Description:** {{ control_description }}
+- **Fund:** {{ fund_id }}
+- **Breach Date:** {{ breach_date }}
+
+## Metrics
+- **Metric Value:** {{ metric_value }}
+- **Threshold Value:** {{ threshold_value }}
+- **Breach Severity:** {{ severity_pct }}% over threshold
+- **Evidence Hash:** {{ evidence_hash }}
+
+## Context
+{{ context_narrative }}
+
+## Related Evidence
+{% for evidence in related_evidence %}
+### Evidence {{ loop.index }}
+- **Hash:** {{ evidence.hash }}
+- **Source:** {{ evidence.source }}
+- **Data:** {{ evidence.summary }}
+{% endfor %}
+
+## Required Commentary Sections
+
+Please provide:
+
+1. **Breach Description** (2-3 sentences)
+   - What limit was breached and by how much
+   - When the breach occurred
+   - Must cite evidence hash
+
+2. **Root Cause Analysis** (2-3 sentences)
+   - Why the breach occurred based on available evidence
+   - Contributing factors if identifiable
+   - Cite relevant evidence
+
+3. **Risk Assessment** (1-2 sentences)
+   - Impact on portfolio risk profile
+   - Any related or cascading effects
+
+4. **Recommended Action** (1-2 sentences)
+   - Suggested remediation steps
+   - Timeline for resolution
+
+Remember: Every factual statement must have [Evidence: hash] citation.
+{% endblock %}
+
+{# ============================================ #}
+{# EXPECTED OUTPUT FORMAT #}
+{# ============================================ #}
+
+{% block output_format %}
+## Exception Commentary: {{ control_name }}
+
+### Breach Description
+[LLM generated content with citations]
+
+### Root Cause Analysis
+[LLM generated content with citations]
+
+### Risk Assessment
+[LLM generated content with citations]
+
+### Recommended Action
+[LLM generated content with citations]
+
+---
+*Commentary generated: {{ generated_at }}*
+*Evidence hashes validated: {{ citations_validated }}*
+{% endblock %}

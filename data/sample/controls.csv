@@ -1,0 +1,12 @@
+# Sample Control Results Data
+# Export this from your existing control system
+# File: controls_YYYYMMDD.csv
+
+control_id,control_name,control_type,calculated_value,threshold,threshold_operator,status,breach_amount
+CONC_ISSUER_001,Single Issuer Concentration,concentration,7.5,10.0,lte,pass,
+CONC_SECTOR_001,Sector Concentration - Technology,concentration,28.0,30.0,lte,warning,
+EXP_GROSS_001,Gross Exposure,exposure,145.0,200.0,lte,pass,
+EXP_NET_001,Net Exposure,exposure,72.0,100.0,lte,pass,
+LIQ_T1_001,T+1 Liquidity,liquidity,18.0,10.0,gte,pass,
+LIQ_T7_001,T+7 Liquidity,liquidity,35.0,40.0,gte,warning,5.0
+CASH_MIN_001,Minimum Cash Buffer,liquidity,3.2,2.0,gte,pass,
