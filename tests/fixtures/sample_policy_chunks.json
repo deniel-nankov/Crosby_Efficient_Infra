@@ -1,0 +1,82 @@
+[
+  {
+    "chunk_id": "POL:concentration:001:a1b2c3d4",
+    "document_id": "DOC001",
+    "document_name": "concentration_limits.md",
+    "section_title": "Sector Concentration Limits",
+    "content": "No single sector shall exceed 30% of total Net Asset Value (NAV). This limit applies to all equity holdings aggregated by GICS sector classification. The Technology sector has an additional restriction of 25% due to historical volatility considerations. Financial sector exposure is limited to 25% due to systemic risk considerations.",
+    "control_types": ["concentration", "sector"],
+    "content_hash": "abc123def456",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:concentration:002:e5f6g7h8",
+    "document_id": "DOC001",
+    "document_name": "concentration_limits.md",
+    "section_title": "Single Issuer Limits",
+    "content": "No single issuer shall exceed 10% of total NAV. This limit applies to all securities from the same corporate issuer. Government securities (US Treasury, Agency) are exempt from the single issuer limit. For positions approaching the 8% warning threshold, weekly monitoring is required.",
+    "control_types": ["concentration", "issuer"],
+    "content_hash": "def456ghi789",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:liquidity:001:i9j0k1l2",
+    "document_id": "DOC002",
+    "document_name": "liquidity_policy.md",
+    "section_title": "Minimum Liquidity Requirements",
+    "content": "The fund must maintain a minimum of 5% of NAV in highly liquid assets at all times. Highly liquid assets are defined as cash, money market instruments, and securities that can be liquidated within one business day at fair value. Daily liquidity monitoring is required with escalation to the Chief Risk Officer if liquidity falls below 7%.",
+    "control_types": ["liquidity", "cash"],
+    "content_hash": "ghi789jkl012",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:liquidity:002:m3n4o5p6",
+    "document_id": "DOC002",
+    "document_name": "liquidity_policy.md",
+    "section_title": "Redemption Coverage",
+    "content": "The fund must maintain sufficient liquidity to cover potential redemptions. Under normal market conditions, the fund should be able to meet redemption requests up to 10% of NAV within 3 business days. Stress testing should be conducted quarterly to assess liquidity under adverse market conditions.",
+    "control_types": ["liquidity", "redemption"],
+    "content_hash": "jkl012mno345",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:exception:001:q7r8s9t0",
+    "document_id": "DOC003",
+    "document_name": "exception_management.md",
+    "section_title": "Breach Notification",
+    "content": "All compliance breaches must be reported to the Chief Risk Officer within 4 hours of detection. Breaches exceeding the limit by more than 10% are classified as critical and require immediate notification to the Board Risk Committee. A preliminary root cause analysis must accompany the initial notification.",
+    "control_types": ["exception", "escalation"],
+    "content_hash": "mno345pqr678",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:exception:002:u1v2w3x4",
+    "document_id": "DOC003",
+    "document_name": "exception_management.md",
+    "section_title": "Remediation Timeline",
+    "content": "Compliance breaches must be remediated within the following timelines: Minor breaches (up to 5% over limit) - 48 hours. Moderate breaches (5-10% over limit) - 24 hours. Critical breaches (over 10% above limit) - Same business day. Extensions require written approval from the CRO with documented justification.",
+    "control_types": ["exception", "remediation"],
+    "content_hash": "pqr678stu901",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:exposure:001:y5z6a7b8",
+    "document_id": "DOC004",
+    "document_name": "exposure_limits.md",
+    "section_title": "Gross Exposure Limits",
+    "content": "Total gross exposure shall not exceed 200% of NAV at any time. This includes both long and short positions valued at absolute market value. Leverage through derivatives should be calculated on a look-through basis. Daily exposure monitoring is mandatory with automated alerts at 180% threshold.",
+    "control_types": ["exposure", "leverage"],
+    "content_hash": "stu901vwx234",
+    "created_at": "2026-01-15T10:00:00Z"
+  },
+  {
+    "chunk_id": "POL:exposure:002:c9d0e1f2",
+    "document_id": "DOC004",
+    "document_name": "exposure_limits.md",
+    "section_title": "Geographic Exposure",
+    "content": "Exposure to any single non-US country shall not exceed 15% of NAV. Total emerging markets exposure is limited to 25% of NAV. Geographic concentration should be monitored weekly with quarterly stress testing for currency and political risk scenarios.",
+    "control_types": ["exposure", "geographic"],
+    "content_hash": "vwx234yza567",
+    "created_at": "2026-01-15T10:00:00Z"
+  }
+]

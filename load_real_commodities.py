@@ -623,8 +623,11 @@ def calculate_commodity_controls(positions: List[Dict], nav: Decimal = Decimal('
         limit = 40.0 if sector == 'Energy' else 30.0  # Higher limit for energy in commodity fund
         status = 'pass' if pct <= limit else ('warning' if pct <= limit * 1.1 else 'fail')
         
+        # Create unique sector ID (15 chars, replace spaces and slashes)
+        sector_id = sector.upper().replace(" ", "_").replace("/", "_")[:15]
+        
         controls.append({
-            'control_id': f'CONC_SECTOR_{sector.upper().replace(" ", "_")[:10]}',
+            'control_id': f'CONC_SECTOR_{sector_id}',
             'control_name': f'Sector Concentration - {sector}',
             'control_type': 'concentration',
             'calculated_value': float(pct),

@@ -15,6 +15,27 @@ from .client_adapter import (
     get_adapter,
 )
 
+from .snowflake_adapter import (
+    SnowflakeConfig,
+    SnowflakeViewConfig,
+    SnowflakeAdapter,
+    MockSnowflakeAdapter,
+    get_snowflake_adapter,
+)
+
+from .clickhouse_adapter import (
+    ClickHouseConfig,
+    ClickHouseDriver,
+    ClickHouseAnalytics,
+    MockClickHouseAnalytics,
+    ControlTrend,
+    ControlTrendPoint,
+    BreachStatistics,
+    ConcentrationTrend,
+    PositionSnapshot,
+    get_clickhouse_analytics,
+)
+
 from .rag_pipeline import (
     PolicyContext,
     GeneratedNarrative,
@@ -43,6 +64,23 @@ __all__ = [
     'CSVAdapter',
     'DatabaseAdapter',
     'get_adapter',
+    # Snowflake Adapter
+    'SnowflakeConfig',
+    'SnowflakeViewConfig',
+    'SnowflakeAdapter',
+    'MockSnowflakeAdapter',
+    'get_snowflake_adapter',
+    # ClickHouse Analytics
+    'ClickHouseConfig',
+    'ClickHouseDriver',
+    'ClickHouseAnalytics',
+    'MockClickHouseAnalytics',
+    'ControlTrend',
+    'ControlTrendPoint',
+    'BreachStatistics',
+    'ConcentrationTrend',
+    'PositionSnapshot',
+    'get_clickhouse_analytics',
     # RAG Pipeline
     'PolicyContext',
     'GeneratedNarrative',

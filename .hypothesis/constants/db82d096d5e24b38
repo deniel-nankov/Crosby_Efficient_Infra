@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\agent\investigator.py
+# hypothesis_version: 6.150.2
+
+[0.0, 30.0, 100, 500, ', ', '...', '<=', 'FINDINGS:', 'FINDINGS:(.*)', 'N/A', 'Portfolio sectors:\n', 'See findings', 'Unknown', '\\n[-•\\d.]+\\s*', 'above', 'asset_class', 'below', 'calculate_what_if', 'compare_to_threshold', 'concentration', 'control_id', 'fail', 'failed', 'get_control_details', 'get_position_details', 'issuer', 'liquidity', 'list_all_sectors', 'lookup_policy', 'lte', 'n', 'percent_to_sell', 'query', 'query_top_positions', 'sector', 'similarity', 'ticker', 'warning']

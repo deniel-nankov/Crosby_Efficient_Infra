@@ -1,0 +1,277 @@
+{# ============================================================ #}
+{# RISK COMMITTEE QUARTERLY REPORT                             #}
+{# For Board / Risk Committee Presentation                     #}
+{# ============================================================ #}
+
+# {{ fund_name }}
+## Risk Committee Report
+
+**Reporting Period:** {{ period_start | date_format }} - {{ period_end | date_format }}  
+**Prepared For:** Risk Committee / Board of Directors  
+**Document Classification:** CONFIDENTIAL - BOARD MATERIALS  
+
+---
+
+## Executive Overview
+
+### Compliance Health Score: {{ health_score }}/100
+
+{{ executive_overview }}
+
+---
+
+## 1. Key Performance Indicators
+
+### 1.1 Compliance Metrics Summary
+
+| Metric | Q{{ quarter }} {{ year }} | Prior Quarter | YoY Change | Target | Status |
+|--------|---------------------------|---------------|------------|--------|--------|
+| Control Pass Rate | {{ pass_rate | percent_format }} | {{ pass_rate_prior | percent_format }} | {{ pass_rate_yoy | signed_percent }} | ≥98% | {{ pass_rate_status }} |
+| Total Exceptions | {{ total_exceptions }} | {{ exceptions_prior }} | {{ exceptions_change | signed_number }} | ≤5/qtr | {{ exceptions_status }} |
+| Avg Exception Age | {{ avg_exception_age }} days | {{ avg_age_prior }} days | {{ age_change | signed_number }}d | ≤10 days | {{ age_status }} |
+| Escalations to CCO | {{ cco_escalations }} | {{ cco_escalations_prior }} | {{ cco_change | signed_number }} | ≤2/qtr | {{ cco_status }} |
+| Regulatory Findings | {{ reg_findings }} | {{ reg_findings_prior }} | — | 0 | {{ reg_status }} |
+
+### 1.2 Control Test Statistics
+
+| Category | Tests Run | Passed | Warnings | Breaches | Pass Rate |
+|----------|-----------|--------|----------|----------|-----------|
+{% for cat in control_stats %}
+| {{ cat.name }} | {{ cat.tests }} | {{ cat.passed }} | {{ cat.warnings }} | {{ cat.breaches }} | {{ cat.pass_rate | percent_format }} |
+{% endfor %}
+| **TOTAL** | {{ total_tests }} | {{ total_passed }} | {{ total_warnings }} | {{ total_breaches }} | {{ overall_pass_rate | percent_format }} |
+
+---
+
+## 2. Exception Analysis
+
+### 2.1 Exception Trend
+
+| Month | New | Closed | Net Change | Open (EOM) | Avg Age |
+|-------|-----|--------|------------|------------|---------|
+{% for month in exception_trend %}
+| {{ month.name }} | {{ month.new }} | {{ month.closed }} | {{ month.net | signed_number }} | {{ month.open_eom }} | {{ month.avg_age }} days |
+{% endfor %}
+
+### 2.2 Exception Root Causes
+
+| Root Cause | Count | % of Total | Trend vs Prior Qtr |
+|------------|-------|------------|-------------------|
+{% for cause in root_causes %}
+| {{ cause.name }} | {{ cause.count }} | {{ cause.pct | percent_format }} | {{ cause.trend }} |
+{% endfor %}
+
+### 2.3 Notable Exceptions This Quarter
+
+{% for exc in notable_exceptions %}
+**{{ exc.control_name }}** ({{ exc.date | date_format }})
+- Breach: {{ exc.breach_value | number_format(2) }} vs limit {{ exc.threshold | number_format(2) }}
+- Resolution: {{ exc.resolution }}
+- Days to Remediate: {{ exc.days_to_remediate }}
+- Lessons Learned: {{ exc.lessons }}
+
+{% endfor %}
+
+---
+
+## 3. Limit Utilization Analysis
+
+### 3.1 Limit Utilization Trends
+
+| Limit | Avg Utilization | Max Utilization | Days >80% | Days >90% | Breaches |
+|-------|-----------------|-----------------|-----------|-----------|----------|
+{% for limit in limit_utilization %}
+| {{ limit.name }} | {{ limit.avg_util | percent_format }} | {{ limit.max_util | percent_format }} | {{ limit.days_80 }} | {{ limit.days_90 }} | {{ limit.breaches }} |
+{% endfor %}
+
+### 3.2 High Watermarks
+
+| Date | Limit | Value | Utilization | Market Context |
+|------|-------|-------|-------------|----------------|
+{% for hwm in high_watermarks %}
+| {{ hwm.date | date_format }} | {{ hwm.limit }} | {{ hwm.value | number_format(2) }} | {{ hwm.utilization | percent_format }} | {{ hwm.context }} |
+{% endfor %}
+
+---
+
+## 4. Risk Metrics Evolution
+
+### 4.1 VaR Trend
+
+| Month | VaR 95% 1D ($M) | VaR 99% 1D ($M) | % NAV | Limit Util | Backtest Exceptions |
+|-------|----------------|-----------------|-------|------------|---------------------|
+{% for month in var_trend %}
+| {{ month.name }} | ${{ month.var_95 | number_format(1) }} | ${{ month.var_99 | number_format(1) }} | {{ month.pct_nav | percent_format }} | {{ month.util | percent_format }} | {{ month.backtest_exc }} |
+{% endfor %}
+
+### 4.2 Stress Test Results
+
+| Scenario | Impact ($M) | Impact (% NAV) | Limit | Within Tolerance |
+|----------|-------------|----------------|-------|------------------|
+{% for scenario in stress_tests %}
+| {{ scenario.name }} | ${{ scenario.impact | number_format(1) }} | {{ scenario.pct_nav | percent_format }} | {{ scenario.limit | percent_format }} | {{ scenario.status }} |
+{% endfor %}
+
+---
+
+## 5. Exposure Analysis
+
+### 5.1 Exposure Trends (Quarter End)
+
+| Metric | {{ month1 }} | {{ month2 }} | {{ month3 }} | Avg | Limit |
+|--------|--------------|--------------|--------------|-----|-------|
+| Gross Exposure | {{ gross_m1 | percent_format }} | {{ gross_m2 | percent_format }} | {{ gross_m3 | percent_format }} | {{ gross_avg | percent_format }} | {{ gross_limit | percent_format }} |
+| Net Exposure | {{ net_m1 | percent_format }} | {{ net_m2 | percent_format }} | {{ net_m3 | percent_format }} | {{ net_avg | percent_format }} | ±{{ net_limit | percent_format }} |
+| Beta to S&P | {{ beta_m1 | number_format(2) }} | {{ beta_m2 | number_format(2) }} | {{ beta_m3 | number_format(2) }} | {{ beta_avg | number_format(2) }} | — |
+
+### 5.2 Concentration Evolution
+
+| Sector | Q Start | Q End | Change | Limit | Status |
+|--------|---------|-------|--------|-------|--------|
+{% for sector in sector_evolution %}
+| {{ sector.name }} | {{ sector.start | percent_format }} | {{ sector.end | percent_format }} | {{ sector.change | signed_percent }} | {{ sector.limit | percent_format }} | {{ sector.status }} |
+{% endfor %}
+
+---
+
+## 6. Liquidity Analysis
+
+### 6.1 Liquidity Profile Trend
+
+| Bucket | Q Start | Q End | Change | Requirement | Status |
+|--------|---------|-------|--------|-------------|--------|
+| T+1 | {{ t1_start | percent_format }} | {{ t1_end | percent_format }} | {{ t1_change | signed_percent }} | {{ t1_req | percent_format }} min | {{ t1_status }} |
+| T+5 | {{ t5_start | percent_format }} | {{ t5_end | percent_format }} | {{ t5_change | signed_percent }} | — | — |
+| T+30 | {{ t30_start | percent_format }} | {{ t30_end | percent_format }} | {{ t30_change | signed_percent }} | — | — |
+| Illiquid | {{ illiq_start | percent_format }} | {{ illiq_end | percent_format }} | {{ illiq_change | signed_percent }} | {{ illiq_max | percent_format }} max | {{ illiq_status }} |
+
+### 6.2 Redemption Coverage
+
+| Scenario | Portfolio Liquidation | Meets Redemption? | Buffer |
+|----------|----------------------|-------------------|--------|
+| 10% NAV Redemption | {{ liq_10pct }} days | {{ liq_10_status }} | {{ liq_10_buffer | percent_format }} |
+| 25% NAV Redemption | {{ liq_25pct }} days | {{ liq_25_status }} | {{ liq_25_buffer | percent_format }} |
+| 50% NAV Redemption | {{ liq_50pct }} days | {{ liq_50_status }} | {{ liq_50_buffer | percent_format }} |
+
+---
+
+## 7. Counterparty Analysis
+
+### 7.1 Prime Broker Diversification
+
+| Prime Broker | Avg Exposure | Max Exposure | % of Total | Limit | Status |
+|--------------|--------------|--------------|------------|-------|--------|
+{% for pb in prime_brokers %}
+| {{ pb.name }} | {{ pb.avg_exposure | currency_format }} | {{ pb.max_exposure | currency_format }} | {{ pb.pct_total | percent_format }} | {{ pb.limit | percent_format }} | {{ pb.status }} |
+{% endfor %}
+
+### 7.2 OTC Counterparty Summary
+
+| Counterparty | Gross Exp (Avg) | Net Credit (Avg) | Max Net Credit | Rating | Status |
+|--------------|-----------------|------------------|----------------|--------|--------|
+{% for cp in otc_counterparties %}
+| {{ cp.name }} | {{ cp.gross_avg | currency_format }} | {{ cp.net_avg | currency_format }} | {{ cp.net_max | currency_format }} | {{ cp.rating }} | {{ cp.status }} |
+{% endfor %}
+
+---
+
+## 8. Regulatory & Compliance Updates
+
+### 8.1 Regulatory Examinations
+
+| Regulator | Type | Date | Status | Findings | Action Items |
+|-----------|------|------|--------|----------|--------------|
+{% for exam in reg_exams %}
+| {{ exam.regulator }} | {{ exam.type }} | {{ exam.date | date_format }} | {{ exam.status }} | {{ exam.findings }} | {{ exam.actions }} |
+{% endfor %}
+
+{% if not reg_exams %}
+*No regulatory examinations during the quarter.*
+{% endif %}
+
+### 8.2 Policy Updates
+
+| Policy | Effective Date | Summary of Changes |
+|--------|----------------|-------------------|
+{% for policy in policy_updates %}
+| {{ policy.name }} | {{ policy.effective | date_format }} | {{ policy.summary }} |
+{% endfor %}
+
+{% if not policy_updates %}
+*No policy updates during the quarter.*
+{% endif %}
+
+### 8.3 Regulatory Filing Status
+
+| Filing | Period | Due Date | Filed Date | Status |
+|--------|--------|----------|------------|--------|
+{% for filing in reg_filings %}
+| {{ filing.name }} | {{ filing.period }} | {{ filing.due | date_format }} | {{ filing.filed | date_format }} | {{ filing.status }} |
+{% endfor %}
+
+---
+
+## 9. Forward Look
+
+### 9.1 Key Risks for Next Quarter
+
+{% for risk in forward_risks %}
+**{{ loop.index }}. {{ risk.title }}**
+- Risk Level: {{ risk.level }}
+- Potential Impact: {{ risk.impact }}
+- Mitigation: {{ risk.mitigation }}
+
+{% endfor %}
+
+### 9.2 Planned Enhancements
+
+| Initiative | Target Date | Owner | Status |
+|------------|-------------|-------|--------|
+{% for init in initiatives %}
+| {{ init.name }} | {{ init.target | date_format }} | {{ init.owner }} | {{ init.status }} |
+{% endfor %}
+
+---
+
+## 10. Recommendations
+
+{{ recommendations }}
+
+---
+
+## Appendix A: Glossary of Terms
+
+| Term | Definition |
+|------|------------|
+| VaR (95%, 1D) | Maximum expected loss at 95% confidence over 1 trading day |
+| Gross Exposure | Sum of absolute long and short exposures as % of NAV |
+| Net Exposure | Long exposure minus short exposure as % of NAV |
+| T+1 Liquidity | Percentage of portfolio convertible to cash within 1 trading day |
+| Utilization | Current value divided by limit, expressed as percentage |
+
+---
+
+## Appendix B: Control Definitions
+
+| Control ID | Control Name | Threshold | Frequency |
+|------------|--------------|-----------|-----------|
+{% for control in control_definitions %}
+| {{ control.id }} | {{ control.name }} | {{ control.threshold }} | {{ control.frequency }} |
+{% endfor %}
+
+---
+
+**Document Control**
+
+| Version | Date | Author | Approved By |
+|---------|------|--------|-------------|
+| 1.0 | {{ generated_date | date_format }} | Compliance System | _______________ |
+
+---
+
+*This report was prepared by {{ adviser_name }} for the Risk Committee of {{ fund_name }}. 
+The information contained herein is confidential and intended solely for board members and 
+authorized personnel. Distribution outside this group requires CCO approval.*
+
+**{{ fund_name }}** | **{{ adviser_name }}** | CRD# {{ adviser_crd }}
+

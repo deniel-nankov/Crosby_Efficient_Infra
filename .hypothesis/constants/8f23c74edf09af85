@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\control_runner\controls.py
+# hypothesis_version: 6.150.2
+
+[1.3, 1.5, 1.8, 2.0, 3.0, 4.0, 5.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 55.0, 80.0, 95.0, 'CONC_001', 'CONC_002', 'CONC_003', 'CONC_004', 'CP_001', 'CP_002', 'CP_003', 'Form PF Instructions', 'Form PF Section 22', 'Form PF Section 29', 'Gross Leverage Limit', 'LEV_001', 'LEV_002', 'LEV_003', 'LIQ_001', 'LIQ_002', 'LIQ_003', 'LIQ_004', 'Net Leverage Limit', 'POL-CONC-001', 'POL-CP-001', 'POL-DQ-001', 'POL-LEV-001', 'POL-LIQ-001', 'POL-REG-001', 'POL-REG-002', 'POL-VAL-001', 'REG_001', 'REG_002', 'SEC Rule 13F', 'VAL_001', 'VAL_002', 'annual', 'concentration', 'counterparty', 'daily', 'eq', 'error', 'exposure', 'fail', 'gt', 'gte', 'leverage', 'liquidity', 'lt', 'lte', 'monthly', 'neq', 'pass', 'quarterly', 'reconciliation', 'regulatory', 'skip', 'valuation', 'warning', 'weekly', '|']

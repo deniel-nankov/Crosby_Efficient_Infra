@@ -1,0 +1,420 @@
+{# ============================================================ #}
+{# INSTITUTIONAL DAILY COMPLIANCE PACK                          #}
+{# Version: 2.0 - Hedge Fund Institutional Grade                #}
+{# ============================================================ #}
+
+{# ============================================================ #}
+{# DOCUMENT HEADER                                              #}
+{# ============================================================ #}
+
+# {{ fund_name }}
+## Daily Compliance Pack
+
+**Report Date:** {{ report_date | date_format }}  
+**As-of NAV Date:** {{ nav_date | date_format }}  
+**Generated:** {{ generated_at | datetime_format }}  
+**Document ID:** {{ document_id }}  
+**Classification:** CONFIDENTIAL - PROPRIETARY
+
+---
+
+{# ============================================================ #}
+{# SECTION 1: EXECUTIVE DASHBOARD                              #}
+{# ============================================================ #}
+
+## 1. Executive Dashboard
+
+### Overall Compliance Status: {{ overall_status | upper }}
+
+{% if overall_status == 'breach' %}
+⚠️ **IMMEDIATE ACTION REQUIRED** - {{ breach_count }} control breach(es) identified
+{% elif overall_status == 'warning' %}
+⚡ **MONITORING REQUIRED** - {{ warning_count }} control(s) approaching thresholds
+{% else %}
+✅ **ALL CLEAR** - Fund operating within all risk limits
+{% endif %}
+
+### Key Risk Metrics
+
+| Metric | Current | Limit | Utilization | Prior Day | 30D Avg | Status |
+|--------|---------|-------|-------------|-----------|---------|--------|
+| **Gross Exposure** | {{ gross_exposure | percent_format }} | {{ gross_limit | percent_format }} | {{ gross_utilization | percent_format }} | {{ gross_prior_day | percent_format }} | {{ gross_30d_avg | percent_format }} | {{ gross_status }} |
+| **Net Exposure** | {{ net_exposure | percent_format }} | ±{{ net_limit | percent_format }} | {{ net_utilization | percent_format }} | {{ net_prior_day | percent_format }} | {{ net_30d_avg | percent_format }} | {{ net_status }} |
+| **T+1 Liquidity** | {{ t1_liquidity | percent_format }} | {{ t1_requirement | percent_format }} min | {{ t1_headroom | percent_format }} headroom | {{ t1_prior_day | percent_format }} | {{ t1_30d_avg | percent_format }} | {{ t1_status }} |
+| **VaR (95%, 1D)** | {{ var_95 | currency_format }} | {{ var_limit | currency_format }} | {{ var_utilization | percent_format }} | {{ var_prior_day | currency_format }} | — | {{ var_status }} |
+
+### Portfolio Snapshot
+
+| Metric | Value | Change (1D) | Change (MTD) | Change (YTD) |
+|--------|-------|-------------|--------------|--------------|
+| **NAV** | {{ nav | currency_format }} | {{ nav_change_1d | signed_percent }} | {{ nav_change_mtd | signed_percent }} | {{ nav_change_ytd | signed_percent }} |
+| **AUM** | {{ aum | currency_format }} | — | — | — |
+| **# Positions** | {{ position_count | number_format(0) }} | {{ position_change_1d | signed_number }} | — | — |
+| **Beta (SPX)** | {{ beta_spx | number_format(2) }} | — | — | — |
+
+### Control Summary
+
+| Category | Total | Passed | Warnings | Breaches | Pass Rate |
+|----------|-------|--------|----------|----------|-----------|
+{% for cat in control_categories %}
+| {{ cat.name }} | {{ cat.total }} | {{ cat.passed }} | {{ cat.warnings }} | {{ cat.breaches }} | {{ cat.pass_rate | percent_format }} |
+{% endfor %}
+| **TOTAL** | {{ total_controls }} | {{ passed_count }} | {{ warning_count }} | {{ breach_count }} | {{ overall_pass_rate | percent_format }} |
+
+---
+
+{# ============================================================ #}
+{# SECTION 2: EXECUTIVE NARRATIVE                              #}
+{# ============================================================ #}
+
+## 2. Executive Summary
+
+{{ executive_narrative }}
+
+**Evidence Hash:** `{{ executive_evidence_hash }}`
+
+---
+
+{# ============================================================ #}
+{# SECTION 3: LIMIT UTILIZATION DETAIL                        #}
+{# ============================================================ #}
+
+## 3. Limit Utilization Analysis
+
+### 3.1 Exposure Limits
+
+| Limit | Current | Threshold | Headroom | Utilization | Trend (5D) | Status |
+|-------|---------|-----------|----------|-------------|------------|--------|
+{% for limit in exposure_limits %}
+| {{ limit.name }} | {{ limit.current | percent_format }} | {{ limit.threshold | percent_format }} | {{ limit.headroom | percent_format }} | {{ limit.utilization | percent_format }} | {{ limit.trend }} | {{ limit.status_icon }} |
+{% endfor %}
+
+### 3.2 Concentration Limits
+
+| Limit | Current | Threshold | Top Contributor | Utilization | Status |
+|-------|---------|-----------|-----------------|-------------|--------|
+{% for limit in concentration_limits %}
+| {{ limit.name }} | {{ limit.current | percent_format }} | {{ limit.threshold | percent_format }} | {{ limit.top_contributor }} | {{ limit.utilization | percent_format }} | {{ limit.status_icon }} |
+{% endfor %}
+
+### 3.3 Liquidity Requirements
+
+| Bucket | Current | Requirement | Excess/(Deficit) | Status |
+|--------|---------|-------------|------------------|--------|
+| T+1 | {{ t1_current | percent_format }} | {{ t1_req | percent_format }} | {{ t1_excess | percent_format }} | {{ t1_status_icon }} |
+| T+5 | {{ t5_current | percent_format }} | {{ t5_req | percent_format }} | {{ t5_excess | percent_format }} | {{ t5_status_icon }} |
+| T+30 | {{ t30_current | percent_format }} | {{ t30_req | percent_format }} | {{ t30_excess | percent_format }} | {{ t30_status_icon }} |
+| Illiquid | {{ illiquid_current | percent_format }} | {{ illiquid_max | percent_format }} max | {{ illiquid_headroom | percent_format }} | {{ illiquid_status_icon }} |
+
+---
+
+{# ============================================================ #}
+{# SECTION 4: CONTROL TEST RESULTS                            #}
+{# ============================================================ #}
+
+## 4. Control Test Results
+
+{% for category in control_result_categories %}
+
+### 4.{{ loop.index }} {{ category.name }}
+
+| Control ID | Control Name | Value | Threshold | Δ Prior | Δ 30D Avg | YTD Breaches | Status | Evidence |
+|------------|--------------|-------|-----------|---------|-----------|--------------|--------|----------|
+{% for result in category.results %}
+| `{{ result.control_id }}` | {{ result.control_name }} | {{ result.value | number_format(2) }} | {{ result.threshold | number_format(2) }} | {{ result.delta_prior | signed_number(2) }} | {{ result.delta_30d | signed_number(2) }} | {{ result.ytd_breaches }} | {{ result.status_icon }} | `{{ result.evidence_hash[:8] }}` |
+{% endfor %}
+
+{% if category.narrative %}
+**Analysis:** {{ category.narrative }}
+{% endif %}
+
+{% endfor %}
+
+---
+
+{# ============================================================ #}
+{# SECTION 5: EXCEPTION MANAGEMENT                            #}
+{# ============================================================ #}
+
+## 5. Exception Management
+
+### 5.1 Open Exceptions Summary
+
+| # | Age | Control | Breach Value | Threshold | Severity | Escalation | Assigned | Deadline | Status |
+|---|-----|---------|--------------|-----------|----------|------------|----------|----------|--------|
+{% for exc in open_exceptions %}
+| {{ loop.index }} | {{ exc.age_days }}d | {{ exc.control_name }} | {{ exc.breach_value | number_format(2) }} | {{ exc.threshold | number_format(2) }} | {{ exc.severity | percent_format }} | L{{ exc.escalation_level }} | {{ exc.assigned_to }} | {{ exc.deadline | date_format }} | {{ exc.status }} |
+{% endfor %}
+
+{% if not open_exceptions %}
+*No open exceptions at this time.*
+{% endif %}
+
+{% if open_exceptions %}
+### 5.2 Exception Details
+
+{% for exc in open_exceptions %}
+
+#### Exception {{ loop.index }}: {{ exc.control_name }}
+
+**Exception ID:** `{{ exc.exception_id }}`  
+**Breach Date:** {{ exc.breach_date | date_format }}  
+**Age:** {{ exc.age_days }} days  
+**Status:** {{ exc.status | upper }}  
+
+| Metric | Value |
+|--------|-------|
+| Breach Value | {{ exc.breach_value | number_format(4) }} |
+| Threshold | {{ exc.threshold | number_format(4) }} ({{ exc.threshold_type }}) |
+| Severity | {{ exc.severity | percent_format }} {{ "over" if exc.threshold_type == "max" else "under" }} |
+| Escalation Level | {{ exc.escalation_level }} - {{ exc.escalation_name }} |
+| Assigned To | {{ exc.assigned_to }} |
+| Remediation Deadline | {{ exc.deadline | date_format }} |
+
+**Root Cause Analysis:**
+{{ exc.commentary }}
+
+**Remediation Plan:**
+{{ exc.remediation_plan }}
+
+**Evidence Hash:** `{{ exc.evidence_hash }}`
+
+---
+
+{% endfor %}
+{% endif %}
+
+### 5.3 Recently Closed Exceptions (Last 30 Days)
+
+| Closed Date | Control | Was Breached | Resolution | Days Open |
+|-------------|---------|--------------|------------|-----------|
+{% for exc in closed_exceptions %}
+| {{ exc.closed_date | date_format }} | {{ exc.control_name }} | {{ exc.max_breach | number_format(2) }} | {{ exc.resolution }} | {{ exc.days_open }} |
+{% endfor %}
+
+{% if not closed_exceptions %}
+*No exceptions closed in the last 30 days.*
+{% endif %}
+
+---
+
+{# ============================================================ #}
+{# SECTION 6: POSITION ANALYSIS                               #}
+{# ============================================================ #}
+
+## 6. Position Analysis
+
+### 6.1 Top 10 Long Positions
+
+| Rank | Security | Ticker | Sector | Market Value | % NAV | % Gross | Days Held | Unrealized P&L |
+|------|----------|--------|--------|--------------|-------|---------|-----------|----------------|
+{% for pos in top_long_positions %}
+| {{ loop.index }} | {{ pos.security_name }} | {{ pos.ticker }} | {{ pos.sector }} | {{ pos.market_value | currency_format }} | {{ pos.pct_nav | percent_format }} | {{ pos.pct_gross | percent_format }} | {{ pos.days_held }} | {{ pos.unrealized_pnl | currency_format }} |
+{% endfor %}
+
+### 6.2 Top 10 Short Positions
+
+| Rank | Security | Ticker | Sector | Market Value | % NAV | % Gross | Days Held | Unrealized P&L |
+|------|----------|--------|--------|--------------|-------|---------|-----------|----------------|
+{% for pos in top_short_positions %}
+| {{ loop.index }} | {{ pos.security_name }} | {{ pos.ticker }} | {{ pos.sector }} | {{ pos.market_value | currency_format }} | {{ pos.pct_nav | percent_format }} | {{ pos.pct_gross | percent_format }} | {{ pos.days_held }} | {{ pos.unrealized_pnl | currency_format }} |
+{% endfor %}
+
+### 6.3 Sector Exposure
+
+| Sector | Long | Short | Net | Gross | Limit | Utilization | Status |
+|--------|------|-------|-----|-------|-------|-------------|--------|
+{% for sector in sector_exposures %}
+| {{ sector.name }} | {{ sector.long | percent_format }} | {{ sector.short | percent_format }} | {{ sector.net | percent_format }} | {{ sector.gross | percent_format }} | {{ sector.limit | percent_format }} | {{ sector.utilization | percent_format }} | {{ sector.status_icon }} |
+{% endfor %}
+| **TOTAL** | {{ total_long | percent_format }} | {{ total_short | percent_format }} | {{ total_net | percent_format }} | {{ total_gross | percent_format }} | — | — | — |
+
+### 6.4 Geographic Exposure
+
+| Country/Region | Net Exposure | Limit | Status |
+|----------------|--------------|-------|--------|
+{% for geo in geographic_exposures %}
+| {{ geo.name }} | {{ geo.net | percent_format }} | {{ geo.limit | percent_format }} | {{ geo.status_icon }} |
+{% endfor %}
+
+### 6.5 Currency Exposure
+
+| Currency | Exposure (% NAV) | Hedged | Unhedged | Limit | Status |
+|----------|------------------|--------|----------|-------|--------|
+{% for ccy in currency_exposures %}
+| {{ ccy.code }} | {{ ccy.exposure | percent_format }} | {{ ccy.hedged | percent_format }} | {{ ccy.unhedged | percent_format }} | {{ ccy.limit | percent_format }} | {{ ccy.status_icon }} |
+{% endfor %}
+
+---
+
+{# ============================================================ #}
+{# SECTION 7: COUNTERPARTY EXPOSURE                           #}
+{# ============================================================ #}
+
+## 7. Counterparty Exposure
+
+### 7.1 Prime Broker Exposure
+
+| Prime Broker | Long MV | Short MV | Net Exposure | Margin Posted | Available Credit | Utilization |
+|--------------|---------|----------|--------------|---------------|------------------|-------------|
+{% for pb in prime_brokers %}
+| {{ pb.name }} | {{ pb.long_mv | currency_format }} | {{ pb.short_mv | currency_format }} | {{ pb.net | currency_format }} | {{ pb.margin | currency_format }} | {{ pb.credit | currency_format }} | {{ pb.utilization | percent_format }} |
+{% endfor %}
+
+### 7.2 OTC Counterparty Exposure
+
+| Counterparty | Gross Exposure | Net Exposure | Collateral Held | Net Credit | Limit | Status |
+|--------------|----------------|--------------|-----------------|------------|-------|--------|
+{% for cp in otc_counterparties %}
+| {{ cp.name }} | {{ cp.gross | currency_format }} | {{ cp.net | currency_format }} | {{ cp.collateral | currency_format }} | {{ cp.net_credit | currency_format }} | {{ cp.limit | currency_format }} | {{ cp.status_icon }} |
+{% endfor %}
+
+---
+
+{# ============================================================ #}
+{# SECTION 8: RISK METRICS                                    #}
+{# ============================================================ #}
+
+## 8. Risk Metrics
+
+### 8.1 Value at Risk
+
+| VaR Metric | Current | Prior Day | Limit | Utilization | Status |
+|------------|---------|-----------|-------|-------------|--------|
+| VaR (95%, 1D) | {{ var_95_1d | currency_format }} | {{ var_95_1d_prior | currency_format }} | {{ var_limit | currency_format }} | {{ var_utilization | percent_format }} | {{ var_status }} |
+| VaR (99%, 1D) | {{ var_99_1d | currency_format }} | {{ var_99_1d_prior | currency_format }} | — | — | — |
+| VaR (95%, 10D) | {{ var_95_10d | currency_format }} | {{ var_95_10d_prior | currency_format }} | — | — | — |
+| CVaR (95%, 1D) | {{ cvar_95_1d | currency_format }} | {{ cvar_95_1d_prior | currency_format }} | — | — | — |
+
+### 8.2 Greek Exposures
+
+| Greek | Current | Prior Day | Limit | Status |
+|-------|---------|-----------|-------|--------|
+| Delta ($ per 1%) | {{ delta | currency_format }} | {{ delta_prior | currency_format }} | — | — |
+| Gamma ($ per 1%²) | {{ gamma | currency_format }} | {{ gamma_prior | currency_format }} | — | — |
+| Vega ($ per 1 vol pt) | {{ vega | currency_format }} | {{ vega_prior | currency_format }} | {{ vega_limit | currency_format }} | {{ vega_status }} |
+| Theta ($/day) | {{ theta | currency_format }} | {{ theta_prior | currency_format }} | — | — |
+
+### 8.3 Factor Exposures
+
+| Factor | Beta | $ Exposure | % NAV | Limit | Status |
+|--------|------|------------|-------|-------|--------|
+| S&P 500 | {{ beta_spx | number_format(2) }} | {{ spx_exposure | currency_format }} | {{ spx_pct_nav | percent_format }} | — | — |
+| Russell 2000 | {{ beta_r2k | number_format(2) }} | {{ r2k_exposure | currency_format }} | {{ r2k_pct_nav | percent_format }} | — | — |
+| Rates (10Y) | {{ beta_rates | number_format(2) }} | {{ rates_exposure | currency_format }} | {{ rates_pct_nav | percent_format }} | — | — |
+| Credit (HY) | {{ beta_credit | number_format(2) }} | {{ credit_exposure | currency_format }} | {{ credit_pct_nav | percent_format }} | — | — |
+
+---
+
+{# ============================================================ #}
+{# SECTION 9: LEVERAGE ANALYSIS                               #}
+{# ============================================================ #}
+
+## 9. Leverage Analysis
+
+| Leverage Metric | Current | Prior Day | Limit | Utilization | Status |
+|-----------------|---------|-----------|-------|-------------|--------|
+| Regulatory Leverage (13H) | {{ reg_leverage | number_format(2) }}x | {{ reg_leverage_prior | number_format(2) }}x | {{ reg_leverage_limit | number_format(2) }}x | {{ reg_leverage_util | percent_format }} | {{ reg_leverage_status }} |
+| Economic Leverage | {{ econ_leverage | number_format(2) }}x | {{ econ_leverage_prior | number_format(2) }}x | {{ econ_leverage_limit | number_format(2) }}x | {{ econ_leverage_util | percent_format }} | {{ econ_leverage_status }} |
+| Notional Leverage | {{ notional_leverage | number_format(2) }}x | {{ notional_leverage_prior | number_format(2) }}x | — | — | — |
+| Margin Utilization | {{ margin_util | percent_format }} | {{ margin_util_prior | percent_format }} | {{ margin_util_limit | percent_format }} | {{ margin_util_ratio | percent_format }} | {{ margin_util_status }} |
+
+---
+
+{# ============================================================ #}
+{# SECTION 10: TRADE ACTIVITY                                 #}
+{# ============================================================ #}
+
+## 10. Trade Activity Summary
+
+### 10.1 Daily Activity
+
+| Metric | Today | Prior Day | 5D Avg | MTD Total |
+|--------|-------|-----------|--------|-----------|
+| # Trades | {{ trades_today }} | {{ trades_prior }} | {{ trades_5d_avg | number_format(0) }} | {{ trades_mtd }} |
+| Buy Volume | {{ buy_volume | currency_format }} | — | — | {{ buy_volume_mtd | currency_format }} |
+| Sell Volume | {{ sell_volume | currency_format }} | — | — | {{ sell_volume_mtd | currency_format }} |
+| Net Flow | {{ net_flow | currency_format }} | — | — | {{ net_flow_mtd | currency_format }} |
+| Commissions | {{ commissions | currency_format }} | — | — | {{ commissions_mtd | currency_format }} |
+
+### 10.2 Significant Trades (>1% NAV)
+
+| Time | Security | Side | Quantity | Price | Value | % NAV | Trader |
+|------|----------|------|----------|-------|-------|-------|--------|
+{% for trade in significant_trades %}
+| {{ trade.time | time_format }} | {{ trade.security }} | {{ trade.side }} | {{ trade.quantity | number_format(0) }} | {{ trade.price | currency_format }} | {{ trade.value | currency_format }} | {{ trade.pct_nav | percent_format }} | {{ trade.trader }} |
+{% endfor %}
+
+{% if not significant_trades %}
+*No trades exceeding 1% NAV threshold today.*
+{% endif %}
+
+---
+
+{# ============================================================ #}
+{# SECTION 11: EVIDENCE APPENDIX                              #}
+{# ============================================================ #}
+
+## 11. Audit Trail & Evidence
+
+### 11.1 Control Run Metadata
+
+| Run ID | Started | Completed | Duration | Controls Run | Status |
+|--------|---------|-----------|----------|--------------|--------|
+| `{{ run_id }}` | {{ run_started | datetime_format }} | {{ run_completed | datetime_format }} | {{ run_duration }} | {{ controls_run }} | {{ run_status }} |
+
+### 11.2 Data Source Snapshots
+
+| Source | Snapshot ID | As-of Time | Records | Hash |
+|--------|-------------|------------|---------|------|
+{% for snapshot in data_snapshots %}
+| {{ snapshot.source }} | `{{ snapshot.id[:12] }}` | {{ snapshot.as_of | datetime_format }} | {{ snapshot.records | number_format(0) }} | `{{ snapshot.hash[:16] }}...` |
+{% endfor %}
+
+### 11.3 LLM Generation Metadata
+
+| Section | Model | Prompt Hash | Response Hash | Tokens | Latency |
+|---------|-------|-------------|---------------|--------|---------|
+{% for gen in llm_generations %}
+| {{ gen.section }} | {{ gen.model }} | `{{ gen.prompt_hash[:8] }}` | `{{ gen.response_hash[:8] }}` | {{ gen.tokens }} | {{ gen.latency_ms }}ms |
+{% endfor %}
+
+---
+
+{# ============================================================ #}
+{# SECTION 12: DOCUMENT CERTIFICATION                         #}
+{# ============================================================ #}
+
+## 12. Document Certification
+
+**Document Integrity Hash:** `{{ document_hash }}`
+
+### Preparation & Review
+
+| Role | Name | Signature | Date |
+|------|------|-----------|------|
+| Prepared By | _________________________ | _________________________ | ______/______/______ |
+| Reviewed By (Compliance) | _________________________ | _________________________ | ______/______/______ |
+| Approved By (CCO) | _________________________ | _________________________ | ______/______/______ |
+
+### Certification Statement
+
+> I certify that this Daily Compliance Pack accurately reflects the compliance status 
+> of {{ fund_name }} as of {{ report_date | date_format }}. All control tests were 
+> executed against verified source data from the systems of record. All exceptions 
+> have been documented with appropriate escalation per the Exception Management Policy. 
+> Narrative commentary was generated with AI assistance using only cited evidence and 
+> has been reviewed for accuracy.
+
+### SEC Examination Note
+
+> Complete audit trail including all source data, SQL queries, LLM prompts/responses, 
+> and evidence hash chains is maintained in the compliance database (retention: 7 years) 
+> and available upon request. Document ID: `{{ document_id }}`. This document can be 
+> verified using the integrity hash above against the Evidence Store.
+
+---
+
+**{{ fund_name }}** | **{{ adviser_name }}** | CRD# {{ adviser_crd }}  
+*CONFIDENTIAL - PROPRIETARY - FOR INTERNAL USE ONLY*
+

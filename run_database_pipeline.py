@@ -45,6 +45,7 @@ import os
 from datetime import date, datetime, timezone
 from pathlib import Path
 from decimal import Decimal
+from typing import Optional
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
@@ -100,7 +101,8 @@ def check_database_connection():
         )
         cursor = conn.cursor()
         cursor.execute("SELECT version()")
-        version = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        version = result[0] if result else "unknown"
         cursor.close()
         conn.close()
         return True, version
@@ -249,6 +251,66 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
     print(f"  {narrative[:500]}...")
     
     # =========================================================================
+    # STEP 3B: Agentic Investigation (for warnings/failures)
+    # =========================================================================
+    investigation_findings = None
+    issues_to_investigate = [c for c in snapshot.control_results if c.status in ("warning", "fail")]
+    
+    if issues_to_investigate and llm_available:
+        print("\n" + "=" * 70)
+        print("STEP 3B: Agentic Investigation")
+        print("=" * 70)
+        print(f"\n  Found {len(issues_to_investigate)} control(s) requiring investigation")
+        
+        try:
+            from agent.investigator import ComplianceAgent, InvestigationTools
+            
+            # Initialize agent with tools
+            llm = get_compliance_llm()
+            
+            # Get vector store for policy lookup if available
+            vs = None
+            emb = None
+            if retriever:
+                vs = retriever.vector_store
+                emb = retriever.embedder
+            
+            tools = InvestigationTools(snapshot, vector_store=vs, embedder=emb)
+            agent = ComplianceAgent(llm, tools, max_steps=6)
+            
+            # Investigate the most critical issue
+            critical_issue = issues_to_investigate[0]
+            print(f"\n  🔍 Investigating: {critical_issue.control_name}")
+            print(f"     Status: {critical_issue.status.upper()}")
+            print(f"     Value: {critical_issue.calculated_value}% vs {critical_issue.threshold}%")
+            
+            investigation = agent.investigate_control(critical_issue)
+            investigation_findings = investigation
+            
+            print(f"\n  Investigation completed in {investigation.duration_seconds:.1f}s")
+            print(f"  Steps taken: {len(investigation.steps)}")
+            
+            # Show reasoning chain
+            print("\n  Agent Reasoning Chain:")
+            for i, step in enumerate(investigation.steps, 1):
+                if step.thought:
+                    print(f"    [{i}] THOUGHT: {step.thought[:80]}...")
+                if step.tool_call:
+                    print(f"        ACTION: {step.tool_call.tool_name}({step.tool_call.arguments})")
+            
+            print(f"\n  Root Cause: {investigation.root_cause[:200]}...")
+            
+            if investigation.recommendations:
+                print("\n  Recommendations:")
+                for rec in investigation.recommendations[:3]:
+                    print(f"    • {rec[:100]}")
+            
+        except Exception as e:
+            print(f"\n  ⚠ Agent investigation failed: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    # =========================================================================
     # STEP 4: Build PDF Report
     # =========================================================================
     print("\n" + "=" * 70)
@@ -350,7 +412,7 @@ def run_database_pipeline(as_of_date: date, output_dir: Path):
     pdf_path = output_dir / f"db_compliance_report_{snapshot.as_of_date.isoformat()}.pdf"
     pdf_bytes = pdf_builder.generate_daily_compliance_report(
         report_date=snapshot.as_of_date,
-        nav=float(snapshot.nav),
+        nav=float(snapshot.nav or 0),
         positions=positions_for_pdf,
         control_results=controls_for_pdf,
         narrative=narrative,
@@ -459,7 +521,7 @@ def get_rag_retriever():
         return None
 
 
-def generate_llm_narrative(snapshot, rag_context: str = None) -> str:
+def generate_llm_narrative(snapshot, rag_context: Optional[str] = None) -> str:
     """
     Generate narrative using LLM with RAG-retrieved policy context.
     

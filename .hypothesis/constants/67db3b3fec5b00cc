@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\rag\embedder.py
+# hypothesis_version: 6.150.2
+
+[200, 1500, '###\\s*(.+?)(?:\\n|$)', '##\\s*(.+?)(?:\\n|$)', '%(message)s', '*.md', '--db-host', '--db-port', '--embedding-api', '--policies-dir', '5433', 'DB_HOST', 'DB_PORT', 'Document ID:\\s*(\\S+)', 'Introduction', '\\n(?=###\\s)', '\\n(?=##\\s)', '__main__', 'breach', 'cash', 'commodity', 'commodity_trading.md', 'compliance', 'compliance_user', 'concentration', 'content', 'counterparty', 'data', 'database', 'derivatives', 'disclosure', 'document_id', 'embedding', 'escalation', 'exception', 'exposure', 'exposure_limits.md', 'filing', 'geographic', 'gross', 'host', 'index', 'input', 'issuer', 'leverage', 'liquidity', 'liquidity_policy.md', 'localhost', 'model', 'net', 'password', 'policies', 'port', 'redemption', 'regulatory', 'sec_compliance.md', 'section_title', 'sector', 'trading', 'user', 'utf-8']

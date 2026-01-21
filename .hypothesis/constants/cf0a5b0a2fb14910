@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\orchestrator.py
+# hypothesis_version: 6.150.2
+
+['13f_count', 'as_of_date', 'categories', 'compliance_system', 'counterparty', 'distinct_issuers', 'document_code', 'document_date', 'document_hash', 'document_id', 'document_type', 'file_size', 'form_pf', 'fund_id', 'generated_at', 'geographic', 'issuer_name', 'leverage', 'liquidity', 'liquidity_buckets', 'llm_model_id', 'llm_model_version', 'llm_tokens_used', 'model_id', 'model_version', 'narrative_id', 'period_end', 'run_date', 'run_id', 'snapshot_id', 'template_hash', 'template_id', 'template_version', 'tokens_used', 'total_positions', 'total_value', 'value']

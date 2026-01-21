@@ -7,28 +7,56 @@ Creates institutional-quality compliance documents:
 - Condensed to 1-2 pages maximum
 - Professional but understated
 """
+from __future__ import annotations
 
 import io
 import hashlib
 from datetime import datetime, timezone, date
 from typing import List, Dict, Any, Optional
+
 from decimal import Decimal
 
+# ReportLab imports with proper fallback for type checking
 try:
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import letter
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch
-    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
-    from reportlab.platypus import (
-        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-        HRFlowable, Flowable
-    )
+    from reportlab.lib import colors as _colors
+    from reportlab.lib.pagesizes import letter as _letter
+    from reportlab.lib.styles import getSampleStyleSheet as _getSampleStyleSheet
+    from reportlab.lib.styles import ParagraphStyle as _ParagraphStyle
+    from reportlab.lib.units import inch as _inch
+    from reportlab.lib.enums import TA_LEFT as _TA_LEFT
+    from reportlab.lib.enums import TA_CENTER as _TA_CENTER
+    from reportlab.lib.enums import TA_RIGHT as _TA_RIGHT
+    from reportlab.lib.enums import TA_JUSTIFY as _TA_JUSTIFY
+    from reportlab.platypus import SimpleDocTemplate as _SimpleDocTemplate
+    from reportlab.platypus import Paragraph as _Paragraph
+    from reportlab.platypus import Spacer as _Spacer
+    from reportlab.platypus import Table as _Table
+    from reportlab.platypus import TableStyle as _TableStyle
+    from reportlab.platypus import HRFlowable as _HRFlowable
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
+    pdfmetrics = None  # type: ignore[assignment]
+    TTFont = None  # type: ignore[assignment]
+
+# Module-level aliases that are always defined
+colors: Any = _colors if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+letter: Any = _letter if REPORTLAB_AVAILABLE else (612, 792)  # type: ignore[name-defined]
+getSampleStyleSheet: Any = _getSampleStyleSheet if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+ParagraphStyle: Any = _ParagraphStyle if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+inch: Any = _inch if REPORTLAB_AVAILABLE else 72.0  # type: ignore[name-defined]
+TA_LEFT: Any = _TA_LEFT if REPORTLAB_AVAILABLE else 0  # type: ignore[name-defined]
+TA_CENTER: Any = _TA_CENTER if REPORTLAB_AVAILABLE else 1  # type: ignore[name-defined]
+TA_RIGHT: Any = _TA_RIGHT if REPORTLAB_AVAILABLE else 2  # type: ignore[name-defined]
+TA_JUSTIFY: Any = _TA_JUSTIFY if REPORTLAB_AVAILABLE else 4  # type: ignore[name-defined]
+SimpleDocTemplate: Any = _SimpleDocTemplate if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+Paragraph: Any = _Paragraph if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+Spacer: Any = _Spacer if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+Table: Any = _Table if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+TableStyle: Any = _TableStyle if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
+HRFlowable: Any = _HRFlowable if REPORTLAB_AVAILABLE else None  # type: ignore[name-defined]
 
 
 class ProfessionalCompliancePDF:
@@ -47,6 +75,11 @@ class ProfessionalCompliancePDF:
         fund_id: str = "CCM-001",
         confidentiality: str = "CONFIDENTIAL"
     ):
+        if not REPORTLAB_AVAILABLE:
+            raise ImportError(
+                "reportlab is required for PDF generation. "
+                "Install with: pip install reportlab"
+            )
         self.fund_name = fund_name
         self.fund_id = fund_id
         self.confidentiality = confidentiality
@@ -138,8 +171,12 @@ class ProfessionalCompliancePDF:
         
         canvas.restoreState()
     
-    def _simple_table(self, headers: List[str], data: List[List[Any]], 
-                      col_widths: List[float] = None) -> Table:
+    def _simple_table(
+        self, 
+        headers: List[str], 
+        data: List[List[Any]], 
+        col_widths: Optional[List[float]] = None
+    ) -> Any:
         """Create a simple, clean table."""
         table_data = [headers] + data
         
@@ -172,8 +209,8 @@ class ProfessionalCompliancePDF:
         positions: List[Dict[str, Any]],
         control_results: List[Dict[str, Any]],
         narrative: str,
-        snapshot_id: str = None,
-        document_id: str = None,
+        snapshot_id: Optional[str] = None,
+        document_id: Optional[str] = None,
     ) -> bytes:
         """
         Generate a clean, condensed Daily Compliance Report.
@@ -294,11 +331,33 @@ class ProfessionalCompliancePDF:
         ))
         story.append(Spacer(1, 10))
         
-        # ===== COMMENTARY (condensed) =====
+        # ===== COMMENTARY (use actual narrative if provided) =====
         story.append(Paragraph("<b>Commentary</b>", self.styles['SectionHead']))
         
-        # Condense narrative - include breach amounts where relevant
-        if warnings > 0 or failed > 0:
+        # Use the LLM-generated narrative if it contains substantive content
+        if narrative and len(narrative) > 100 and not narrative.startswith("Daily Compliance Review"):
+            # Clean up narrative for PDF display
+            # Take first 2-3 paragraphs to fit on one page
+            paragraphs = [p.strip() for p in narrative.split('\n\n') if p.strip()]
+            display_text = ""
+            char_count = 0
+            for para in paragraphs:
+                if char_count + len(para) > 800:  # Limit to ~800 chars for space
+                    break
+                if para and not para.startswith('---') and not para.startswith('[Generated'):
+                    display_text += para + " "
+                    char_count += len(para)
+            
+            if display_text.strip():
+                story.append(Paragraph(display_text.strip(), self.styles['Body']))
+            else:
+                # Fallback to simple summary
+                story.append(Paragraph(
+                    f"Compliance review: {passed} passed, {warnings} warning(s), {failed} breach(es).",
+                    self.styles['Body']
+                ))
+        elif warnings > 0 or failed > 0:
+            # Fallback: condense narrative - include breach amounts where relevant
             issues = []
             for c in sorted_controls:
                 s = c.get('status', '').lower()
@@ -397,7 +456,7 @@ def generate_professional_pdf(
     control_results: List[Dict[str, Any]],
     narrative: str,
     fund_name: str = "Crosby Capital Management",
-    output_path: str = None,
+    output_path: Optional[str] = None,
 ) -> bytes:
     """Generate a professional compliance PDF."""
     builder = ProfessionalCompliancePDF(fund_name=fund_name)

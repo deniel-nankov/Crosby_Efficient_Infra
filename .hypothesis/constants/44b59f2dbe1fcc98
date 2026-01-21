@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\retrieval\retriever.py
+# hypothesis_version: 6.150.2
+
+[0.0, 1.0, 100, 1000, 8000, '13F', '13f', 'ADV', 'Control Run Summary', 'Form ADV', 'Form PF', '\\b\\w+\\b', 'active', 'adv', 'as_of_date', 'brochure', 'category', 'content', 'control_category', 'control_results', 'controls_passed', 'counterparty', 'disclosure', 'effective_date', 'exact', 'exception_id', 'exceptions', 'filing_date', 'filing_id', 'form_pf', 'holdings', 'institutional', 'leverage', 'lexical', 'liquidity', 'metrics', 'pattern', 'patterns', 'policies', 'policy_code', 'policy_title', 'prior_filings', 'regulatory', 'resolution_type', 'result_id', 'run_id', 'scope', 'score', 'section', 'section_text', 'section_title', 'securities', 'semantic', 'status', 'structured', 'systemic risk', 'title', 'total_controls', 'vector', '|']

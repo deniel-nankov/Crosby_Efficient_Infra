@@ -57,6 +57,36 @@ services:
     restart: unless-stopped
 
   # ===========================================================================
+  # CLICKHOUSE - Time-Series Analytics
+  # ===========================================================================
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1
+    container_name: compliance_clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-clickhouse_dev_123}
+      CLICKHOUSE_DB: compliance
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"   # HTTP interface
+      - "9000:9000"   # Native protocol
+      - "9009:9009"   # Interserver (for clusters)
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
+      - ./init_scripts/clickhouse:/docker-entrypoint-initdb.d
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================================================
   # AIRFLOW - Orchestration
   # ===========================================================================
   airflow-init:
@@ -191,6 +221,8 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  clickhouse_data:
+  clickhouse_logs:
   ollama_data:
   grafana_data:
 

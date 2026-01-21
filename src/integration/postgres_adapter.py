@@ -134,9 +134,110 @@ class PostgresDataSource:
             )
         """)
         
+        # =================================================================
+        # TRADE DATA TABLES - Full transaction lifecycle
+        # =================================================================
+        
+        # Accounts table (for multi-account aggregation)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS accounts (
+                account_id TEXT PRIMARY KEY,
+                account_name TEXT NOT NULL,
+                account_type TEXT NOT NULL,
+                parent_account_id TEXT REFERENCES accounts(account_id),
+                fund_id TEXT NOT NULL DEFAULT 'MASTER_FUND',
+                currency TEXT DEFAULT 'USD',
+                is_active BOOLEAN DEFAULT TRUE,
+                custodian TEXT DEFAULT 'State Street',
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+        
+        # Orders table (OMS integration)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                order_id TEXT PRIMARY KEY,
+                account_id TEXT REFERENCES accounts(account_id),
+                security_id TEXT NOT NULL,
+                ticker TEXT NOT NULL,
+                trade_type TEXT NOT NULL,
+                quantity DECIMAL(20, 6) NOT NULL,
+                limit_price DECIMAL(20, 6),
+                order_time TIMESTAMPTZ NOT NULL,
+                status TEXT NOT NULL,
+                filled_quantity DECIMAL(20, 6) DEFAULT 0,
+                average_fill_price DECIMAL(20, 6),
+                pre_trade_check TEXT DEFAULT 'pending',
+                compliance_notes TEXT,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+        
+        # Trades table (trade blotter)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS trades (
+                trade_id TEXT PRIMARY KEY,
+                order_id TEXT REFERENCES orders(order_id),
+                account_id TEXT REFERENCES accounts(account_id),
+                security_id TEXT NOT NULL,
+                ticker TEXT NOT NULL,
+                trade_type TEXT NOT NULL,
+                quantity DECIMAL(20, 6) NOT NULL,
+                price DECIMAL(20, 6) NOT NULL,
+                gross_amount DECIMAL(20, 2) NOT NULL,
+                commission DECIMAL(20, 2) DEFAULT 0,
+                fees DECIMAL(20, 2) DEFAULT 0,
+                net_amount DECIMAL(20, 2) NOT NULL,
+                exchange TEXT DEFAULT 'NASDAQ',
+                execution_time TIMESTAMPTZ NOT NULL,
+                broker TEXT DEFAULT 'Prime Broker',
+                settlement_date DATE,
+                settlement_status TEXT DEFAULT 'pending',
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+        
+        # Transaction ledger (complete audit trail)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                transaction_id TEXT PRIMARY KEY,
+                transaction_type TEXT NOT NULL,
+                account_id TEXT REFERENCES accounts(account_id),
+                reference_id TEXT NOT NULL,
+                reference_type TEXT NOT NULL,
+                security_id TEXT,
+                quantity_change DECIMAL(20, 6) DEFAULT 0,
+                cash_change DECIMAL(20, 2) DEFAULT 0,
+                effective_date DATE NOT NULL,
+                posted_date DATE NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                notes TEXT
+            )
+        """)
+        
+        # Settlements table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS settlements (
+                settlement_id TEXT PRIMARY KEY,
+                trade_id TEXT REFERENCES trades(trade_id),
+                settlement_date DATE NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                custodian TEXT DEFAULT 'State Street',
+                broker_confirm_received BOOLEAN DEFAULT FALSE,
+                custodian_matched BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+        
+        # Create indexes for trade tables
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_trades_account ON trades(account_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_trades_execution ON trades(execution_time)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_account ON transactions(account_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(effective_date)")
+        
         self.connection.commit()
         cursor.close()
-        logger.info("Data tables created successfully")
+        logger.info("Data tables created successfully (including trade data)")
     
     def load_positions_from_csv(self, csv_path: str, as_of_date: date):
         """
@@ -284,18 +385,24 @@ class PostgresDataSource:
         
         cursor = self.connection.cursor()
         
-        # Sample positions
+        # Sample positions - larger values for realistic $2B fund
+        # Technology sector is intentionally high to trigger concentration warning
         positions = [
-            ('SEC001', 'AAPL', 'Apple Inc', 100000, 15000000, 'USD', 'Technology', 'Apple Inc', 'equity'),
-            ('SEC002', 'MSFT', 'Microsoft Corp', 80000, 12000000, 'USD', 'Technology', 'Microsoft Corp', 'equity'),
-            ('SEC003', 'GOOGL', 'Alphabet Inc', 50000, 8500000, 'USD', 'Technology', 'Alphabet Inc', 'equity'),
-            ('SEC004', 'JPM', 'JPMorgan Chase', 120000, 9500000, 'USD', 'Financials', 'JPMorgan Chase', 'equity'),
-            ('SEC005', 'JNJ', 'Johnson & Johnson', 90000, 7200000, 'USD', 'Healthcare', 'Johnson & Johnson', 'equity'),
-            ('SEC006', 'XOM', 'Exxon Mobil', 150000, 6800000, 'USD', 'Energy', 'Exxon Mobil', 'equity'),
-            ('SEC007', 'PG', 'Procter & Gamble', 70000, 5500000, 'USD', 'Consumer Staples', 'Procter & Gamble', 'equity'),
-            ('SEC008', 'NVDA', 'NVIDIA Corp', 25000, 11000000, 'USD', 'Technology', 'NVIDIA Corp', 'equity'),
-            ('SEC009', 'V', 'Visa Inc', 60000, 8000000, 'USD', 'Financials', 'Visa Inc', 'equity'),
-            ('SEC010', 'UNH', 'UnitedHealth', 40000, 7500000, 'USD', 'Healthcare', 'UnitedHealth Group', 'equity'),
+            ('SEC001', 'AAPL', 'Apple Inc', 500000, 175000000, 'USD', 'Technology', 'Apple Inc', 'equity'),
+            ('SEC002', 'MSFT', 'Microsoft Corp', 350000, 155000000, 'USD', 'Technology', 'Microsoft Corp', 'equity'),
+            ('SEC003', 'NVDA', 'NVIDIA Corp', 200000, 180000000, 'USD', 'Technology', 'NVIDIA Corp', 'equity'),
+            ('SEC004', 'GOOGL', 'Alphabet Inc', 150000, 50000000, 'USD', 'Technology', 'Alphabet Inc', 'equity'),
+            ('SEC005', 'JPM', 'JPMorgan Chase', 800000, 150000000, 'USD', 'Financials', 'JPMorgan Chase', 'equity'),
+            ('SEC006', 'BAC', 'Bank of America', 1200000, 45000000, 'USD', 'Financials', 'Bank of America', 'equity'),
+            ('SEC007', 'JNJ', 'Johnson & Johnson', 400000, 72000000, 'USD', 'Healthcare', 'Johnson & Johnson', 'equity'),
+            ('SEC008', 'UNH', 'UnitedHealth', 180000, 105000000, 'USD', 'Healthcare', 'UnitedHealth Group', 'equity'),
+            ('SEC009', 'XOM', 'Exxon Mobil', 600000, 68000000, 'USD', 'Energy', 'Exxon Mobil', 'equity'),
+            ('SEC010', 'CVX', 'Chevron Corp', 400000, 60000000, 'USD', 'Energy', 'Chevron Corp', 'equity'),
+            ('SEC011', 'PG', 'Procter & Gamble', 350000, 55000000, 'USD', 'Consumer Staples', 'Procter & Gamble', 'equity'),
+            ('SEC012', 'KO', 'Coca-Cola', 600000, 42000000, 'USD', 'Consumer Staples', 'Coca-Cola Co', 'equity'),
+            ('SEC013', 'V', 'Visa Inc', 250000, 80000000, 'USD', 'Financials', 'Visa Inc', 'equity'),
+            ('SEC014', 'MA', 'Mastercard', 150000, 75000000, 'USD', 'Financials', 'Mastercard Inc', 'equity'),
+            ('SEC015', 'CASH', 'Cash & Equivalents', 1, 64000000, 'USD', 'Cash', 'N/A', 'cash'),
         ]
         
         for pos in positions:
@@ -304,12 +411,16 @@ class PostgresDataSource:
                 (security_id, ticker, security_name, quantity, market_value, 
                  currency, sector, issuer, asset_class, as_of_date)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (security_id, as_of_date) DO NOTHING
+                ON CONFLICT (security_id, as_of_date) DO UPDATE SET
+                    market_value = EXCLUDED.market_value,
+                    quantity = EXCLUDED.quantity
             """, (*pos, as_of_date))
         
+        # Calculate actual sector concentration
+        # Tech: 175+155+180+50 = 560M / 2000M = 28%
         # Sample control results
         controls = [
-            ('CONC_ISSUER_001', 'Single Issuer Concentration', 'concentration', 7.5, 10.0, 'lte', 'pass', None),
+            ('CONC_ISSUER_001', 'Single Issuer Concentration', 'concentration', 9.0, 10.0, 'lte', 'warning', None),  # NVDA at 9%
             ('CONC_SECTOR_001', 'Sector Concentration - Technology', 'concentration', 28.0, 30.0, 'lte', 'warning', None),
             ('EXP_GROSS_001', 'Gross Exposure', 'exposure', 145.0, 200.0, 'lte', 'pass', None),
             ('EXP_NET_001', 'Net Exposure', 'exposure', 72.0, 100.0, 'lte', 'pass', None),
@@ -324,7 +435,9 @@ class PostgresDataSource:
                 (control_id, control_name, control_type, calculated_value, 
                  threshold, threshold_operator, status, breach_amount, as_of_date)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (control_id, as_of_date) DO NOTHING
+                ON CONFLICT (control_id, as_of_date) DO UPDATE SET
+                    calculated_value = EXCLUDED.calculated_value,
+                    status = EXCLUDED.status
             """, (*ctrl, as_of_date))
         
         # Sample NAV
@@ -334,9 +447,136 @@ class PostgresDataSource:
             ON CONFLICT (as_of_date) DO NOTHING
         """, (Decimal('2000000000'), as_of_date))
         
+        # Sample accounts and trades
+        self._load_sample_trade_data(cursor, as_of_date)
+        
         self.connection.commit()
         cursor.close()
         logger.info(f"Sample data loaded for {as_of_date}")
+    
+    def _load_sample_trade_data(self, cursor, as_of_date: date):
+        """Load sample trade data for demonstration."""
+        from datetime import timedelta
+        import uuid
+        
+        # Sample accounts
+        accounts = [
+            ('MAIN-001', 'Master Fund - Main Account', 'fund', None, 'MASTER_FUND'),
+            ('SLEEVE-TECH', 'Technology Sleeve', 'sleeve', 'MAIN-001', 'MASTER_FUND'),
+            ('SLEEVE-FIN', 'Financials Sleeve', 'sleeve', 'MAIN-001', 'MASTER_FUND'),
+        ]
+        
+        for acc in accounts:
+            cursor.execute("""
+                INSERT INTO accounts (account_id, account_name, account_type, parent_account_id, fund_id)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (account_id) DO NOTHING
+            """, acc)
+        
+        # Sample trades
+        trades = [
+            ('TRD-001', None, 'SLEEVE-TECH', 'NVDA', 'NVDA', 'buy', 1000, 850.00, 850000, 50, 0, 850050, 'NASDAQ', as_of_date - timedelta(days=2), 'Goldman Sachs', as_of_date, 'settled'),
+            ('TRD-002', None, 'SLEEVE-TECH', 'AAPL', 'AAPL', 'sell', 500, 175.00, 87500, 25, 0, 87475, 'NYSE', as_of_date - timedelta(days=1), 'Morgan Stanley', as_of_date, 'pending'),
+            ('TRD-003', None, 'MAIN-001', 'MSFT', 'MSFT', 'buy', 2000, 415.00, 830000, 75, 0, 830075, 'NASDAQ', as_of_date, 'JPMorgan', as_of_date + timedelta(days=2), 'pending'),
+        ]
+        
+        for trade in trades:
+            cursor.execute("""
+                INSERT INTO trades 
+                (trade_id, order_id, account_id, security_id, ticker, trade_type,
+                 quantity, price, gross_amount, commission, fees, net_amount,
+                 exchange, execution_time, broker, settlement_date, settlement_status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (trade_id) DO NOTHING
+            """, trade)
+            
+            # Create transaction entry
+            txn_id = str(uuid.uuid4())[:8]
+            qty_change = trade[6] if trade[5] == 'buy' else -trade[6]
+            cash_change = -trade[11] if trade[5] == 'buy' else trade[11]
+            cursor.execute("""
+                INSERT INTO transactions
+                (transaction_id, transaction_type, account_id, reference_id, reference_type,
+                 security_id, quantity_change, cash_change, effective_date, posted_date)
+                VALUES (%s, 'trade', %s, %s, 'trade', %s, %s, %s, %s, %s)
+                ON CONFLICT (transaction_id) DO NOTHING
+            """, (txn_id, trade[2], trade[0], trade[3], qty_change, cash_change, as_of_date, as_of_date))
+    
+    # =========================================================================
+    # TRADE DATA ACCESS METHODS
+    # =========================================================================
+    
+    def get_trades(
+        self,
+        account_id: Optional[str] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """Get trades with optional filters."""
+        cursor = self.connection.cursor()
+        
+        query = "SELECT * FROM trades WHERE 1=1"
+        params = []
+        
+        if account_id:
+            query += " AND account_id = %s"
+            params.append(account_id)
+        if start_date:
+            query += " AND DATE(execution_time) >= %s"
+            params.append(start_date)
+        if end_date:
+            query += " AND DATE(execution_time) <= %s"
+            params.append(end_date)
+        
+        query += f" ORDER BY execution_time DESC LIMIT {limit}"
+        
+        cursor.execute(query, params)
+        columns = [desc[0] for desc in cursor.description]
+        trades = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.close()
+        return trades
+    
+    def get_trade_summary(
+        self,
+        start_date: date,
+        end_date: date,
+    ) -> List[Dict[str, Any]]:
+        """Aggregate trade summary by security."""
+        cursor = self.connection.cursor()
+        
+        cursor.execute("""
+            SELECT 
+                security_id,
+                ticker,
+                SUM(CASE WHEN trade_type = 'buy' THEN quantity ELSE 0 END) as buy_qty,
+                SUM(CASE WHEN trade_type = 'sell' THEN quantity ELSE 0 END) as sell_qty,
+                SUM(CASE WHEN trade_type = 'buy' THEN gross_amount ELSE 0 END) as buy_amount,
+                SUM(CASE WHEN trade_type = 'sell' THEN gross_amount ELSE 0 END) as sell_amount,
+                COUNT(*) as trade_count
+            FROM trades
+            WHERE DATE(execution_time) BETWEEN %s AND %s
+            GROUP BY security_id, ticker
+            ORDER BY SUM(gross_amount) DESC
+        """, (start_date, end_date))
+        
+        columns = [desc[0] for desc in cursor.description]
+        summary = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.close()
+        return summary
+    
+    def get_accounts(self, fund_id: str = "MASTER_FUND") -> List[Dict[str, Any]]:
+        """Get all accounts for a fund."""
+        cursor = self.connection.cursor()
+        cursor.execute("""
+            SELECT account_id, account_name, account_type, parent_account_id, custodian
+            FROM accounts
+            WHERE fund_id = %s AND is_active = TRUE
+        """, (fund_id,))
+        columns = [desc[0] for desc in cursor.description]
+        accounts = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.close()
+        return accounts
     
     def close(self):
         """Close the connection."""

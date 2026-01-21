@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\integration\rag_pipeline.py
+# hypothesis_version: 6.150.2
+
+[0.3, 1.0, 500, '1. Position Limits', '[No policy found]', 'citations', 'concentration', 'content', 'content_hash', 'context_hash', 'control_id', 'deterministic', 'exposure', 'fail', 'generated_at', 'gpt-4o', 'has_citations', 'liquidity', 'model_used', 'narrative_id', 'pass', 'policies', 'prompt_hash', 'role', 'system', 'user', 'warning', '⚠️ BREACHES DETECTED', '⚡ WARNINGS']

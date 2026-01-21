@@ -252,9 +252,14 @@ class TestCSVAdapter:
     def test_csv_adapter_stores_path(self):
         """CSVAdapter stores the data directory path."""
         from src.integration.client_adapter import CSVAdapter
+        import os
         
-        adapter = CSVAdapter(data_dir="/data/exports")
-        assert str(adapter.data_dir) == "/data/exports"
+        # Use a path that works on all platforms
+        test_dir = os.path.join("data", "exports")
+        adapter = CSVAdapter(data_dir=test_dir)
+        # Path normalization may differ by OS, just check it ends with expected parts
+        assert adapter.data_dir.name == "exports"
+        assert adapter.data_dir.parent.name == "data"
 
 
 class TestDatabaseAdapter:

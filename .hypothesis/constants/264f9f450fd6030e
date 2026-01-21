@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\control_runner\runner.py
+# hypothesis_version: 6.150.2
+
+[100, 1000, '1.0.0', 'ControlRunContext', 'Exception', 'ad-hoc', 'backfill', 'breach_amount', 'breach_entity', 'breach_percentage', 'breach_value', 'calculated_value', 'cancelled', 'completed', 'computation_sql', 'config_hash', 'control_code', 'critical', 'datetime', 'description', 'due_date', 'duration_ms', 'ended_at', 'error', 'evidence_sample', 'exception_code', 'exception_id', 'executed_at', 'executor', 'failed', 'fund_id', 'high', 'low', 'medium', 'open', 'opened_at', 'passed', 'query_hash', 'remediation', 'result_id', 'result_status', 'row_count', 'run_code', 'run_date', 'run_id', 'run_type', 'running', 'scheduled', 'severity', 'skipped', 'snapshot_id', 'snapshot_timestamp', 'snapshot_ts', 'started_at', 'threshold_operator', 'threshold_value', 'title', 'total', 'version', 'warning']

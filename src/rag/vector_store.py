@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PolicyChunk:
+    # Dynamic attributes set at runtime (for type checking)
+    similarity: float = field(default=0.0, init=False, repr=False)
+    rerank_score: float = field(default=0.0, init=False, repr=False)
+    final_score: float = field(default=0.0, init=False, repr=False)
+    sparse_score: float = field(default=0.0, init=False, repr=False)
     """A chunk of policy document with its embedding."""
     chunk_id: str
     document_id: str           # e.g., "POL-CONC-001"
@@ -41,7 +46,7 @@ class PolicyChunk:
         document_name: str,
         section_title: str,
         document_id: str = "",
-        control_types: List[str] = None,
+        control_types: Optional[List[str]] = None,
     ) -> "PolicyChunk":
         """Create a chunk from text content."""
         content_hash = hashlib.sha256(content.encode()).hexdigest()
@@ -152,7 +157,7 @@ class VectorStore:
         self,
         query_embedding: List[float],
         limit: int = 5,
-        control_types: List[str] = None,
+        control_types: Optional[List[str]] = None,
     ) -> List[PolicyChunk]:
         """
         Search for similar policy chunks.

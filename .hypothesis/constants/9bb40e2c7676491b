@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\integration\llm_config.py
+# hypothesis_version: 6.150.2
+
+[0.3, 500, 1000000, '$', ',', '0.3', '500', 'ADV', 'ALL', 'AND', 'ANTHROPIC_API_KEY', 'ANY', 'ARE', 'BOY', 'CAN', 'CEO', 'CFO', 'CIO', 'DID', 'FOR', 'GET', 'GICS', 'HAD', 'HAS', 'HER', 'HIM', 'HIS', 'HOW', 'ITS', 'LET', 'LLMConfig', 'LLM_ANONYMIZE', 'LLM_API_BASE', 'LLM_API_KEY', 'LLM_MAX_TOKENS', 'LLM_MODEL', 'LLM_PROVIDER', 'LLM_TEMPERATURE', 'MAN', 'MAY', 'NAV', 'NEW', 'NOT', 'NOW', 'OLD', 'ONE', 'OPENAI_API_KEY', 'OUR', 'OUT', 'OWN', 'PUT', 'SAW', 'SAY', 'SEC', 'SHE', 'THE', 'TOO', 'TOP', 'TWO', 'USD', 'USE', 'WARNING', 'WAS', 'WAY', 'WHO', 'anthropic', 'choices', 'content', 'gpt-4o', 'llama3.1:70b', 'lm-studio', 'lmstudio', 'local-model', 'max_tokens', 'message', 'messages', 'mock', 'model', 'num_predict', 'ollama', 'openai', 'options', 'prompt', 'response', 'role', 'stream', 'system', 'temperature', 'true', 'user', 'vllm']

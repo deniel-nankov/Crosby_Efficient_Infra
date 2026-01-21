@@ -1,0 +1,4 @@
+# file: C:\Users\chris\Downloads\Crosby_Efficient_Infra-main\src\rag\retriever.py
+# hypothesis_version: 6.150.2
+
+[0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 1.0, 1.5, 200, 500, '"\'', ', ', '-', '...', '; ', '=', 'Multiple controls', 'No expansion needed', '\\b[\\w%]+\\b', 'aum', 'breach', 'cash', 'chunk', 'cio', 'concentration', 'counterparty', 'cpu', 'dense', 'description', 'escalation', 'exception', 'exposure', 'fail', 'fin', 'final_score', 'financials financial', 'issuer', 'limit', 'liquidity', 'nav', 'net asset value NAV', 'otc', 'over the counter OTC', 'pass', 'pm', 'policy', 'portfolio manager', 'precedent', 'query_coverage', 'query_template', 'remediation', 'retrieval_quality', 'sector', 'sector GICS industry', 'similarity', 'source_agreement', 'sparse', 'specificity', 'tech', 'technology', 'warning', '{base_query}']
